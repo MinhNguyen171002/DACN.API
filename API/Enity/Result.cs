@@ -9,9 +9,11 @@ namespace API.Enity
         [Key]
         public string ResultID { get; set; }
         public int Score { get; set; }
-        [ForeignKey(nameof(ResultID))]
         public string UserID { get; set; }
-        [ForeignKey(nameof(ResultID))]
         public string ExamID { get; set; }
+        [ForeignKey(nameof(UserID))]
+        public User user { get; set; }
+        [ForeignKey(nameof(ExamID))]
+        public Exam exam { get; set; }
     }
 }

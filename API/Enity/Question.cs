@@ -13,8 +13,9 @@ namespace API.Enity
         public string Question3 { get; set; }
         public string Question4 { get; set; }
         public string CorrectAnswer { get; set; }
-        [ForeignKey(nameof(QuestionID))]
         public string ExamID { get; set; }
+        [ForeignKey(nameof(ExamID))]
+        public Exam exam { get; set; }
 
     }
 }

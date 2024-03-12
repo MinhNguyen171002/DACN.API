@@ -10,7 +10,8 @@ namespace API.Enity
         public string ExamName { get; set;}
         public string ExamDescription { get; set;}
         public TimeSpan ExamDuration {  get; set;}
-        [ForeignKey(nameof(ExamID))]
         public string LevelID { get; set; }
+        [ForeignKey(nameof(LevelID))]
+        public Level level { get; set; }
     }
 }
