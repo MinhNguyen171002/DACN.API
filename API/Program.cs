@@ -1,4 +1,7 @@
+using API.DBContext;
 using Microsoft.AspNetCore.Authentication.Negotiate;
+using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +14,10 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
    .AddNegotiate();
+var con = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<DB>(options =>
+    options.UseMySql(con,ServerVersion.AutoDetect(con))
+);
 
 builder.Services.AddAuthorization(options =>
 {
