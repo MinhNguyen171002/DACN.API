@@ -8,6 +8,9 @@ namespace API.Repositories
     public interface IUserRepositories : IRepository<User>
     {
         public void insertUser(User user);
+        public void updateUser(User user);
+        public void deleteUser(User user);
+        
     }
     public class UserRepository : RepositoryBase<User>, IUserRepositories
     {

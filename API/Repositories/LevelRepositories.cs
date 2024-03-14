@@ -6,7 +6,9 @@ namespace API.Repositories
 {
     public interface ILevelRepositories : IRepository<Level>
     {
-
+        public void insertLevel(Level level);
+        public void deleteLevel(Level level);
+        public void updateLevel(Level level);
     }
     public class LevelRepository : RepositoryBase<Level>, ILevelRepositories
     {

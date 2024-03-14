@@ -6,7 +6,9 @@ namespace API.Repositories
 {
     public interface IQuestionRepositories : IRepository<Question>
     {
-
+        public void insertQuestion(Question question);
+        public void deletetQuestion(Question question);
+        public void updateQuestion(Question question);
     }
     public class QuestionRepository : RepositoryBase<Question>, IQuestionRepositories
     {

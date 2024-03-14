@@ -6,7 +6,9 @@ namespace API.Repositories
 {
     public interface IResultRepositories : IRepository<Result>
     {
-
+        public void insertResult(Result result);
+        public void deleteResult(Result result);
+        public void updateResult(Result result);
     }
     public class ResultRepository : RepositoryBase<Result>, IResultRepositories
     {

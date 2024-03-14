@@ -6,7 +6,9 @@ namespace API.Repositories
 {
     public interface IExamRepositories : IRepository<Exam>
     {
-
+        public void insertExam(Exam exam);
+        public void deleteExam(Exam exam);
+        public void updateExam(Exam exam);
     }
     public class ExamRepository : RepositoryBase<Exam>, IExamRepositories
     {
