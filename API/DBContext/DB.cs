@@ -1,9 +1,11 @@
 ﻿using API.Enity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.DBContext
 {
-    public class DB: DbContext
+    public class DB:  IdentityDbContext<IdentityUser>
     {
         public DbSet<User> users { get; set; }
         public DbSet<Result> results { get; set; }

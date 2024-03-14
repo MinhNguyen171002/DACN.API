@@ -14,7 +14,7 @@ namespace API.Controllers.API
         ExamService examService;
         QuestionService questionService;
         ResultService resultService;
-        public AdminAPI(DB dBContext, UserService userService, LevelService levelService, 
+        public AdminAPI(DB dBContext, UserService userService, LevelService levelService,
             ExamService examService, QuestionService questionService, ResultService resultService)
         {
             this.dBContext = dBContext;
@@ -24,7 +24,5 @@ namespace API.Controllers.API
             this.questionService = questionService;
             this.resultService = resultService;
         }
-        [HttpPost]
-        [Route("add")]
     }
 }
