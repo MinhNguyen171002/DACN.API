@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Enity
 {
@@ -9,6 +11,8 @@ namespace API.Enity
         public string UserName { get; set; }
         public string SDT { get; set; }
         public string Email {  get; set; }
-                
+        [ForeignKey(nameof(UserID))]
+        public IdentityUser user { get; set; }
+
     }
 }

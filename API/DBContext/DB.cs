@@ -1,9 +1,12 @@
 ﻿using API.Enity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace API.DBContext
 {
-    public class DB: DbContext
+    public class DB: IdentityDbContext<IdentityUser>
     {
         public DbSet<User> users { get; set; }
         public DbSet<Result> results { get; set; }
@@ -16,10 +19,7 @@ namespace API.DBContext
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            foreach (var entityType in builder.Model.GetEntityTypes())
-            {
-                
-            }
+            builder.Entity<IdentityUser>().ToTable("IdenityUser");
         }
     }
 }
