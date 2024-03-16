@@ -28,6 +28,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
                 .AddEntityFrameworkStores<DB>()
                 .AddDefaultTokenProviders();
 builder.Services.AddScoped<IUserRepositories, UserRepository>();
+
 builder.Services.AddScoped<ILevelRepositories, LevelRepository>();
 builder.Services.AddScoped<IExamRepositories, ExamRepository>();
 builder.Services.AddScoped<IQuestionRepositories, QuestionRepository>();

@@ -75,6 +75,7 @@ namespace API.Controllers.API
             userService.insert(user1);
             return Ok(new Response { Status = true, Message = "Welcome" });
         }
+
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> SignIn([FromBody] LoginModel login)
@@ -107,6 +108,13 @@ namespace API.Controllers.API
                 });
             }
             return Unauthorized();
+        }
+        [HttpPost]
+        [Route("logout")]
+        public async Task<IActionResult> SignOut()
+        {
+            await _signInManager.SignOutAsync();
+            return Ok(new Response { Message = "Logout success!", Status = true });
         }
     }
 }
