@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Model;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.NetworkInformation;
 using System.Security.Claims;
 using System.Text;
 
@@ -45,6 +46,7 @@ namespace API.Controllers.API
             this._signInManager = _signInManager;
             this._configuration = _configuration;
         }
+        #region "authentication"
         [HttpPost]
         [AllowAnonymous]
         [Route("register")]
@@ -58,7 +60,7 @@ namespace API.Controllers.API
             {
                 Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.UserName                
+                UserName = model.UserName
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -115,6 +117,25 @@ namespace API.Controllers.API
         {
             await _signInManager.SignOutAsync();
             return Ok(new Response { Message = "Logout success!", Status = true });
+        }
+        #endregion
+        [HttpPost]
+        [Route("addlevel")]
+        public async Task<IActionResult> CreLevel(,string username, string levelid ,string levelname)
+        {
+            var user = await _userManager.FindByNameAsync(username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if(roles.FirstOrDefault() == "admin")
+            {
+                Level level = new Level()
+                {
+                    LevelID = levelid,
+                    LevelName = levelname,
+                };
+                levelService.insert(level);
+                return Ok(new Response { Status = true, Message = "Succces"});
+            }
+            return Ok(new Response { Status = false, Message = "Error" });            
         }
     }
 }
