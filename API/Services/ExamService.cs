@@ -32,5 +32,9 @@ namespace API.Services
             examRepositories.deleteExam(exam);
             Save();
         }
+        public Exam GetbyId(string id)
+        {
+            return examRepositories.getbyid(id);
+        }
     }
 }

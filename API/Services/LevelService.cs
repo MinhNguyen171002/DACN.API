@@ -32,5 +32,9 @@ namespace API.Services
             levelRepositories.deleteLevel(level);
             Save();
         }
+        public Level getbyid(string id)
+        {
+            return levelRepositories.getbyid(id);
+        }
     }
 }

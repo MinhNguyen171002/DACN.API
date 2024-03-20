@@ -32,5 +32,9 @@ namespace API.Services
             resultRepositories.deleteResult(result);
             Save();
         }
+        public Result GetbyId(string id)
+        {
+            return resultRepositories.getbyid(id);
+        }
     }
 }

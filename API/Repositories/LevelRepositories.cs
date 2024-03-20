@@ -9,6 +9,7 @@ namespace API.Repositories
         public void insertLevel(Level level);
         public void deleteLevel(Level level);
         public void updateLevel(Level level);
+        public Level getbyid(object id);
     }
     public class LevelRepository : RepositoryBase<Level>, ILevelRepositories
     {
@@ -28,6 +29,10 @@ namespace API.Repositories
         {
             _dbContext.levels.Attach(level);
             _dbContext.Entry(level).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+        }
+        public Level getbyid(object id)
+        {
+            return _dbContext.levels.Find(id);
         }
     }
 }

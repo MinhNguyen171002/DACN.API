@@ -32,5 +32,9 @@ namespace API.Services
             questionRepositories.deletetQuestion(question);
             Save();
         }
+        public Question GetbyId(string id)
+        {
+            return questionRepositories.getbyid(id);
+        }
     }
 }

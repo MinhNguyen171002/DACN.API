@@ -9,6 +9,7 @@ namespace API.Repositories
         public void insertQuestion(Question question);
         public void deletetQuestion(Question question);
         public void updateQuestion(Question question);
+        public Question getbyid(object id);
     }
     public class QuestionRepository : RepositoryBase<Question>, IQuestionRepositories
     {
@@ -27,6 +28,10 @@ namespace API.Repositories
         {
             _dbContext.questions.Attach(question);
             _dbContext.Entry(question).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+        }
+        public Question getbyid(object id)
+        {
+            return _dbContext.questions.Find(id);
         }
     }
 }

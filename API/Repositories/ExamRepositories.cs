@@ -9,6 +9,7 @@ namespace API.Repositories
         public void insertExam(Exam exam);
         public void deleteExam(Exam exam);
         public void updateExam(Exam exam);
+        public Exam getbyid(object id);
     }
     public class ExamRepository : RepositoryBase<Exam>, IExamRepositories
     {
@@ -27,6 +28,10 @@ namespace API.Repositories
         {
             _dbContext.exams.Attach(exam);
             _dbContext.Entry(exam).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+        }
+        public Exam getbyid(object id)
+        {
+            return _dbContext.exams.Find(id);
         }
     }
 }

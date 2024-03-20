@@ -9,6 +9,7 @@ namespace API.Repositories
         public void insertResult(Result result);
         public void deleteResult(Result result);
         public void updateResult(Result result);
+        public Result getbyid(object id);
     }
     public class ResultRepository : RepositoryBase<Result>, IResultRepositories
     {
@@ -27,6 +28,10 @@ namespace API.Repositories
         {
             _dbContext.results.Attach(result);
             _dbContext.Entry(result).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+        }
+        public Result getbyid(object id)
+        {
+            return _dbContext.results.Find(id);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using API.DBContext;
 using API.Enity;
+using API.Model;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -119,9 +120,10 @@ namespace API.Controllers.API
             return Ok(new Response { Message = "Logout success!", Status = true });
         }
         #endregion
+        #region "level"
         [HttpPost]
         [Route("addlevel")]
-        public async Task<IActionResult> CreLevel(,string username, string levelid ,string levelname)
+        public async Task<IActionResult> CreLevel(string username, string levelid ,string levelname)
         {
             var user = await _userManager.FindByNameAsync(username);
             var roles = await _userManager.GetRolesAsync(user);
@@ -135,7 +137,223 @@ namespace API.Controllers.API
                 levelService.insert(level);
                 return Ok(new Response { Status = true, Message = "Succces"});
             }
-            return Ok(new Response { Status = false, Message = "Error" });            
+            return Ok(new Response { Status = false, Message = "Need authorization" });            
         }
+        [HttpPut]
+        [Route("updatelevel")]
+        public async Task<IActionResult> UpLevel(string username, string id)
+        {
+            var user = await _userManager.FindByNameAsync(username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var level = levelService.getbyid(id);
+                if (level == null)
+                {
+                    levelService.update(level);
+                    return Ok(new Response { Status = true, Message = "Succces" });
+                }
+                return Ok(new Response { Status = false, Message = "Fail" });
+            }
+            return Ok(new Response { Status = false, Message = "Need authorization" });
+        }
+        [HttpDelete]
+        [Route("deletelevel")]
+        public async Task<IActionResult> DelLevel(string username, string id)
+        {
+            var user = await _userManager.FindByNameAsync(username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var level = levelService.getbyid(id);
+                if (level == null)
+                {
+                    levelService.delete(level);
+                    return Ok(new Response { Status = true, Message = "Succces" });
+                }
+                return Ok(new Response { Status = false, Message = "Fail" });
+            }
+            return Ok(new Response { Status = false, Message = "Need authorization" });
+        }
+        #endregion
+        #region "exam"
+        [HttpPost]
+        [Route("addexam")]
+        public async Task<IActionResult> CreExam([FromBody] MExam ex)
+        {
+            var user = await _userManager.FindByNameAsync(ex.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                Exam exam = new Exam()
+                {
+                    ExamID = ex.ExamID,
+                    ExamName = ex.ExamName,
+                    ExamDescription = ex.ExamDescription,
+                    ExamDuration = ex.ExamDuration,
+                };
+                examService.insert(exam);
+                return Ok(new Response { Status = true, Message = "Succces" });
+            }
+            return Ok(new Response { Status = false, Message = "Need authorization" });
+        }
+        [HttpPut]
+        [Route("updatexam")]
+        public async Task<IActionResult> UpExam([FromBody] MExam ex)
+        {
+            var user = await _userManager.FindByNameAsync(ex.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var exam = examService.GetbyId(ex.ExamID);
+                if (exam == null)
+                {
+                    examService.update(exam);
+                    return Ok(new Response { Status = true, Message = "Succces" });
+                }
+                return Ok(new Response { Status = false, Message = "Fail" });
+            }
+            return Ok(new Response { Status = false, Message = "Need authorization" });
+        }
+        [HttpDelete]
+        [Route("deletexam")]
+        public async Task<IActionResult> DelExam([FromBody] MExam ex)
+        {
+            var user = await _userManager.FindByNameAsync(ex.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var exam = examService.GetbyId(ex.ExamID);
+                if (exam == null)
+                {
+                    examService.delete(exam);
+                    return Ok(new Response { Status = true, Message = "Succces" });
+                }
+                return Ok(new Response { Status = false, Message = "Fail" });
+            }
+            return Ok(new Response { Status = false, Message = "Need authorization" });
+        }
+        #endregion
+        #region "question"
+        [HttpPost]
+        [Route("addquestion")]
+        public async Task<IActionResult> CreQuestion([FromBody] MQuestion ques)
+        {
+            var user = await _userManager.FindByNameAsync(ques.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                Question question = new Question()
+                {
+                    QuestionID = ques.QuestionID,
+                    QuestionContext = ques.QuestionContext,
+                    Question1 = ques.Question1,
+                    Question2 = ques.Question2,
+                    Question3 = ques.Question3,
+                    Question4 = ques.Question4,
+                    CorrectAnswer = ques.CorrectAnswer,
+                    ExamID = ques.ExamID,
+                };
+                questionService.insert(question);
+                return Ok(new Response { Status = true, Message = "Succces" });
+            }
+            return Ok(new Response { Status = false, Message = "Need authorization" });
+        }
+        [HttpPut]
+        [Route("updatequestion")]
+        public async Task<IActionResult> UpQuestion([FromBody] MQuestion ques)
+        {
+            var user = await _userManager.FindByNameAsync(ques.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var question = questionService.GetbyId(ques.QuestionID);
+                if (question == null)
+                {
+                    questionService.update(question);
+                    return Ok(new Response { Status = true, Message = "Succces" });
+                }
+                return Ok(new Response { Status = false, Message = "Fail" });
+            }
+            return Ok(new Response { Status = false, Message = "Need authorization" });
+        }
+        [HttpDelete]
+        [Route("deletequestion")]
+        public async Task<IActionResult> DelQuestion([FromBody] MQuestion ques)
+        {
+            var user = await _userManager.FindByNameAsync(ques.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var question = questionService.GetbyId(ques.QuestionID);
+                if (question == null)
+                {
+                    questionService.delete(question);
+                    return Ok(new Response { Status = true, Message = "Succces" });
+                }
+                return Ok(new Response { Status = false, Message = "Fail" });
+            }
+            return Ok(new Response { Status = false, Message = "Need authorization" });
+        }
+        #endregion
+        #region "result"
+        [HttpPost]
+        [Route("addresult")]
+        public async Task<IActionResult> CreResult([FromBody] MResult re)
+        {
+            var user = await _userManager.FindByNameAsync(re.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                Result result = new Result()
+                {
+                    ResultID = re.ResultID,
+                    ExamID = re.ExamID,
+                    Score = re.Score,
+                    UserID = re.UserID,
+                };
+                resultService.insert(result);
+                return Ok(new Response { Status = true, Message = "Succces" });
+            }
+            return Ok(new Response { Status = false, Message = "Need authorization" });
+        }
+        [HttpPut]
+        [Route("updateresult")]
+        public async Task<IActionResult> UpResult([FromBody] MResult re)
+        {
+            var user = await _userManager.FindByNameAsync(re.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var result = resultService.GetbyId(re.ExamID);
+                if (result == null)
+                {
+                    resultService.update(result);
+                    return Ok(new Response { Status = true, Message = "Succces" });
+                }
+                return Ok(new Response { Status = false, Message = "Fail" });
+            }
+            return Ok(new Response { Status = false, Message = "Need authorization" });
+        }
+        [HttpDelete]
+        [Route("deleteresult")]
+        public async Task<IActionResult> DelResult(MResult re)
+        {
+            var user = await _userManager.FindByNameAsync(re.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var result = resultService.GetbyId(re.ExamID);
+                if (result == null)
+                {
+                    resultService.delete(result);
+                    return Ok(new Response { Status = true, Message = "Succces" });
+                }
+                return Ok(new Response { Status = false, Message = "Fail" });
+            }
+            return Ok(new Response { Status = false, Message = "Need authorization" });
+        }
+        #endregion
+
     }
 }
