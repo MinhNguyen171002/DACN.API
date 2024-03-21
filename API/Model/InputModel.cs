@@ -1,5 +1,11 @@
 ﻿namespace API.Model
 {
+    public class MLevel
+    {
+        public string Username { get; set; }
+        public string LevelID { get; set; }
+        public string LevelName { get; set; }
+    }
     public class MExam
     {
         public string Username { get; set; }

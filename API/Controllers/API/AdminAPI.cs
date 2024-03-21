@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Model;
+using MySqlConnector.Logging;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.NetworkInformation;
 using System.Security.Claims;
@@ -123,57 +124,39 @@ namespace API.Controllers.API
         #region "level"
         [HttpPost]
         [Route("addlevel")]
-        public async Task<IActionResult> CreLevel(string username, string levelid ,string levelname)
-        {
-            var user = await _userManager.FindByNameAsync(username);
-            var roles = await _userManager.GetRolesAsync(user);
-            if(roles.FirstOrDefault() == "admin")
+        public IActionResult CreLevel([FromBody] MLevel lev)
+        {                      
+            if (levelService.insert(lev).IsCompletedSuccessfully)
             {
-                Level level = new Level()
-                {
-                    LevelID = levelid,
-                    LevelName = levelname,
-                };
-                levelService.insert(level);
-                return Ok(new Response { Status = true, Message = "Succces"});
+                return Ok(new Response { Status = true, Message = "Succces" });
             }
-            return Ok(new Response { Status = false, Message = "Need authorization" });            
+            return Ok(new Response { Status = false, Message = "Need authencation" });
         }
         [HttpPut]
         [Route("updatelevel")]
-        public async Task<IActionResult> UpLevel(string username, string id)
+        public IActionResult UpLevel([FromBody] MLevel lev)
         {
-            var user = await _userManager.FindByNameAsync(username);
-            var roles = await _userManager.GetRolesAsync(user);
-            if (roles.FirstOrDefault() == "admin")
+            if(levelService.update(lev).IsCompletedSuccessfully)
             {
-                var level = levelService.getbyid(id);
-                if (level == null)
-                {
-                    levelService.update(level);
-                    return Ok(new Response { Status = true, Message = "Succces" });
-                }
-                return Ok(new Response { Status = false, Message = "Fail" });
+                return Ok(new Response { Status = true, Message = "Success" });
             }
-            return Ok(new Response { Status = false, Message = "Need authorization" });
+            return Ok(new Response { Status = false, Message = "Need authencation" });
         }
         [HttpDelete]
         [Route("deletelevel")]
-        public async Task<IActionResult> DelLevel(string username, string id)
+        public IActionResult DelLevel([FromBody] MLevel lev)
         {
-            var user = await _userManager.FindByNameAsync(username);
-            var roles = await _userManager.GetRolesAsync(user);
-            if (roles.FirstOrDefault() == "admin")
+            if(levelService.delete(lev).IsCompletedSuccessfully)
             {
-                var level = levelService.getbyid(id);
-                if (level == null)
-                {
-                    levelService.delete(level);
-                    return Ok(new Response { Status = true, Message = "Succces" });
-                }
-                return Ok(new Response { Status = false, Message = "Fail" });
-            }
+                return Ok(new Response { Status = true, Message = "Succes" });
+            }                
             return Ok(new Response { Status = false, Message = "Need authorization" });
+        }
+        [HttpGet]
+        [Route("listlevel")]
+        public IActionResult ListLevel()
+        {
+            return Ok(levelService.list());
         }
         #endregion
         #region "exam"
@@ -354,6 +337,5 @@ namespace API.Controllers.API
             return Ok(new Response { Status = false, Message = "Need authorization" });
         }
         #endregion
-
     }
 }
