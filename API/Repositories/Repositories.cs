@@ -78,6 +78,7 @@ namespace API.Repositories
         public void deleteExam(Exam exam);
         public void updateExam(Exam exam);
         public Exam getbyid(object id);
+        public List<Exam> Listall(object id);
     }
     public class ExamRepository : RepositoryBase<Exam>, IExamRepositories
     {
@@ -101,6 +102,10 @@ namespace API.Repositories
         {
             return _dbContext.exams.Find(id);
         }
+        public List<Exam> Listall(object id)
+        {
+            return _dbContext.exams.Where(x=>x.LevelID == (string)id).ToList();
+        }
     }
     #endregion
     #region "question"
@@ -110,6 +115,7 @@ namespace API.Repositories
         public void deletetQuestion(Question question);
         public void updateQuestion(Question question);
         public Question getbyid(object id);
+        public List<Question> Listall(object id);
     }
     public class QuestionRepository : RepositoryBase<Question>, IQuestionRepositories
     {
@@ -133,6 +139,10 @@ namespace API.Repositories
         {
             return _dbContext.questions.Find(id);
         }
+        public List<Question> Listall(object id)
+        {
+            return _dbContext.questions.Where(x => x.ExamID == (string)id).ToList();
+        }
     }
     #endregion
     #region "result"
@@ -142,6 +152,7 @@ namespace API.Repositories
         public void deleteResult(Result result);
         public void updateResult(Result result);
         public Result getbyid(object id);
+        public List<Result> Listall(object idExam, object idUser);
     }
     public class ResultRepository : RepositoryBase<Result>, IResultRepositories
     {
@@ -164,6 +175,14 @@ namespace API.Repositories
         public Result getbyid(object id)
         {
             return _dbContext.results.Find(id);
+        }
+        public List<Result> Listall(object idExam,object idUser)
+        {
+            if(idExam == null && idUser == null)
+            {
+                
+            }
+            return _dbContext.results.Where(x => x.ExamID == (string)idExam && x.UserID == (string)idUser).ToList();
         }
     }
     #endregion

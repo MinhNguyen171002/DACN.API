@@ -3,6 +3,7 @@ using API.Enity;
 using API.Model;
 using API.Repositories;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Model;
 
@@ -57,7 +58,7 @@ namespace API.Services
         {
             dBContext.SaveChanges();
         }
-        public async Task insert(MLevel lev)
+        public async Task<Response> insert(MLevel lev)
         {
             var user = await _userManager.FindByNameAsync(lev.Username);
             var roles = await _userManager.GetRolesAsync(user);
@@ -70,9 +71,11 @@ namespace API.Services
                 };
                 levelRepositories.insertLevel(level);
                 Save();
-            }            
+                return new Response { Status = true, Message = "Success" };
+            }
+            return new Response { Status = false, Message = "Need authencation" };
         }
-        public async Task update(MLevel lev)
+        public async Task<Response> update(MLevel lev)
         {
             var user = await _userManager.FindByNameAsync(lev.Username);
             var roles = await _userManager.GetRolesAsync(user);
@@ -83,10 +86,12 @@ namespace API.Services
                 {
                     levelRepositories.updateLevel(level);
                     Save();
+                    return new Response { Status = true, Message = "Success" };
                 }
             }
+            return new Response { Status = false, Message = "Need authencation" };
         }
-        public async Task delete(MLevel lev)
+        public async Task<Response> delete(MLevel lev)
         {
             var user = await _userManager.FindByNameAsync(lev.Username);
             var roles = await _userManager.GetRolesAsync(user);
@@ -97,8 +102,10 @@ namespace API.Services
                 {
                     levelRepositories.deleteLevel(level);
                     Save();
+                    return new Response { Status = true, Message = "Success" };
                 }
             }
+            return new Response { Status = false, Message = "Need authencation" };
 
         }
         public Level getbyid(string id)
@@ -115,34 +122,76 @@ namespace API.Services
     public class ExamService
     {
         private DB dBContext;
+        private readonly UserManager<IdentityUser> _userManager;
         private IExamRepositories examRepositories;
-        public ExamService(DB dBContext)
+        public ExamService(DB dBContext, UserManager<IdentityUser> userManager)
         {
             this.dBContext = dBContext;
             this.examRepositories = new ExamRepository(dBContext);
+            this._userManager = userManager;
         }
         public void Save()
         {
             dBContext.SaveChanges();
         }
-        public void insert(Exam exam)
+        public async Task<Response> insert(MExam ex)
         {
-            examRepositories.insertExam(exam);
-            Save();
+            var user = await _userManager.FindByNameAsync(ex.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                Exam exam = new Exam()
+                {
+                    ExamID = ex.ExamID,
+                    ExamName = ex.ExamName,
+                    ExamDescription = ex.ExamDescription,
+                    ExamDuration = ex.ExamDuration,
+                };
+                examRepositories.insertExam(exam);
+                Save();
+                return new Response { Status = true, Message = "Success" };
+            }
+            return new Response { Status = false, Message = "Need authencation" };
         }
-        public void update(Exam exam)
+        public async Task<Response> update(MExam ex)
         {
-            examRepositories.updateExam(exam);
-            Save();
+            var user = await _userManager.FindByNameAsync(ex.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var exam = GetbyId(ex.ExamID);
+                if (exam == null)
+                {
+                    examRepositories.updateExam(exam);
+                    Save();
+                    return new Response { Status = true, Message = "Success"};
+                }
+            }
+            return new Response { Status = false, Message = "Need authencation" };
         }
-        public void delete(Exam exam)
+        public async Task<Response> delete(MExam ex)
         {
-            examRepositories.deleteExam(exam);
-            Save();
+            var user = await _userManager.FindByNameAsync(ex.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var exam = GetbyId(ex.ExamID);
+                if (exam == null)
+                {
+                    examRepositories.deleteExam(exam);
+                    Save();
+                    return new Response { Status = true, Message = "Success" };
+                }                
+            }
+            return new Response { Status = false, Message = "Need authencation" };
         }
         public Exam GetbyId(string id)
         {
             return examRepositories.getbyid(id);
+        }
+        public List<Exam> List(string id)
+        {
+            return examRepositories.Listall(id);
         }
     }
     #endregion
@@ -150,34 +199,80 @@ namespace API.Services
     public class QuestionService
     {
         private DB dBContext;
+        private readonly UserManager<IdentityUser> _userManager;
         private IQuestionRepositories questionRepositories;
-        public QuestionService(DB dBContext)
+        public QuestionService(DB dBContext, UserManager<IdentityUser> _userManager)
         {
             this.dBContext = dBContext;
             this.questionRepositories = new QuestionRepository(dBContext);
+            this._userManager = _userManager;
         }
         public void Save()
         {
             dBContext.SaveChanges();
         }
-        public void insert(Question question)
+        public async Task<Response> insert(MQuestion ques)
         {
-            questionRepositories.insertQuestion(question);
-            Save();
+            var user = await _userManager.FindByNameAsync(ques.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                Question question = new Question()
+                {
+                    QuestionID = ques.QuestionID,
+                    QuestionContext = ques.QuestionContext,
+                    Question1 = ques.Question1,
+                    Question2 = ques.Question2,
+                    Question3 = ques.Question3,
+                    Question4 = ques.Question4,
+                    CorrectAnswer = ques.CorrectAnswer,
+                    ExamID = ques.ExamID,
+                };
+                questionRepositories.insertQuestion(question);
+                Save();
+                return new Response { Status = true, Message = "Success" };
+            }
+            return new Response { Status = false, Message = "Need authencation" };
         }
-        public void update(Question question)
+        public async Task<Response> update(MQuestion ques)
         {
-            questionRepositories.updateQuestion(question);
-            Save();
+            var user = await _userManager.FindByNameAsync(ques.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var question = GetbyId(ques.QuestionID);
+                if (question == null)
+                {
+                    questionRepositories.updateQuestion(question);
+                    Save();
+                    return new Response { Status = true, Message = "Success" };
+                }
+            }
+            return new Response { Status = false, Message = "Need authencation" };
         }
-        public void delete(Question question)
+        public async Task<Response> delete(MQuestion ques)
         {
-            questionRepositories.deletetQuestion(question);
-            Save();
+            var user = await _userManager.FindByNameAsync(ques.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var question = GetbyId(ques.QuestionID);
+                if (question == null)
+                {
+                    questionRepositories.deletetQuestion(question);
+                    Save();
+                    return new Response { Status = true, Message = "Success" };
+                }
+            }
+            return new Response { Status = false, Message = "Need authencation" };
         }
         public Question GetbyId(string id)
         {
             return questionRepositories.getbyid(id);
+        }
+        public List<Question> List(string id)
+        {
+            return questionRepositories.Listall(id);
         }
     }
     #endregion
@@ -185,34 +280,76 @@ namespace API.Services
     public class ResultService
     {
         private DB dBContext;
+        private readonly UserManager<IdentityUser> _userManager;
         private IResultRepositories resultRepositories;
-        public ResultService(DB dBContext)
+        public ResultService(DB dBContext, UserManager<IdentityUser> userManager)
         {
             this.dBContext = dBContext;
             this.resultRepositories = new ResultRepository(dBContext);
+            this._userManager = userManager;
         }
         public void Save()
         {
             dBContext.SaveChanges();
         }
-        public void insert(Result result)
+        public async Task<Response> insert(MResult re)
         {
-            resultRepositories.insertResult(result);
-            Save();
+            var user = await _userManager.FindByNameAsync(re.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                Result result = new Result()
+                {
+                    ResultID = re.ResultID,
+                    ExamID = re.ExamID,
+                    Score = re.Score,
+                    UserID = re.UserID,
+                };
+                resultRepositories.insertResult(result);
+                Save();
+                return new Response { Status = true, Message = "Success" };
+            }
+            return new Response { Status = false, Message = "Need authencation" };
         }
-        public void update(Result result)
+        public async Task<Response> update(MResult re)
         {
-            resultRepositories.updateResult(result);
-            Save();
+            var user = await _userManager.FindByNameAsync(re.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var result = GetbyId(re.ExamID);
+                if (result == null)
+                {
+                    resultRepositories.updateResult(result);
+                    Save();
+                    return new Response { Status = true, Message = "Success" };
+                }
+            }
+            return new Response { Status = false, Message = "Need authencation" };
         }
-        public void delete(Result result)
+        public async Task<Response> delete(MResult re)
         {
-            resultRepositories.deleteResult(result);
-            Save();
+            var user = await _userManager.FindByNameAsync(re.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var result = GetbyId(re.ExamID);
+                if (result == null)
+                {
+                    resultRepositories.deleteResult(result);
+                    Save();
+                    return new Response { Status = true, Message = "Success" };
+                }
+            }
+            return new Response { Status = false, Message = "Need authencation" };
         }
         public Result GetbyId(string id)
         {
             return resultRepositories.getbyid(id);
+        }
+        public List<Result> List(string idExam, string idUser)
+        {
+            return resultRepositories.Listall(idExam,idUser);
         }
     }
     #endregion
