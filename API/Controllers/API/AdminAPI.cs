@@ -1,5 +1,6 @@
 ﻿using API.DBContext;
 using API.Enity;
+using API.Model;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -63,8 +64,15 @@ namespace API.Controllers.API
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
+            {
+                if (!await _roleManager.RoleExistsAsync(Role.Customer))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole(Role.Customer));
+                }
+                await _userManager.AddToRoleAsync(user, Role.Customer);
+            }
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User creation failed! Please check user details and try again." });
-
+            
             User user1 = new User()
             {
                 UserID = user.Id,
