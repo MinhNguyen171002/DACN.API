@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Model;
+using MySqlConnector.Logging;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.NetworkInformation;
 using System.Security.Claims;
 using System.Text;
 
@@ -46,6 +48,7 @@ namespace API.Controllers.API
             this._signInManager = _signInManager;
             this._configuration = _configuration;
         }
+        #region "authentication"
         [HttpPost]
         [AllowAnonymous]
         [Route("register")]
@@ -59,7 +62,7 @@ namespace API.Controllers.API
             {
                 Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.UserName                
+                UserName = model.UserName
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -124,5 +127,170 @@ namespace API.Controllers.API
             await _signInManager.SignOutAsync();
             return Ok(new Response { Message = "Logout success!", Status = true });
         }
+        #endregion
+        #region "level"
+        [HttpPost]
+        [Route("addlevel")]
+        public async Task<IActionResult> CreLevel([FromBody] MLevel lev)
+        {
+            var status = await levelService.insert(lev);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpPut]
+        [Route("updatelevel")]
+        public async Task<IActionResult> UpLevel([FromBody] MLevel lev)
+        {
+            var status = await levelService.insert(lev);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpDelete]
+        [Route("deletelevel")]
+        public async Task<IActionResult> DelLevel([FromBody] MLevel lev)
+        {
+            var status = await levelService.insert(lev);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpGet]
+        [Route("listlevel")]
+        public IActionResult ListLevel()
+        {
+            return Ok(levelService.list());
+        }
+        #endregion
+        #region "exam"
+        [HttpPost]
+        [Route("addexam")]
+        public async Task<IActionResult> CreExam([FromBody] MExam ex)
+        {
+            var status = await examService.insert(ex);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }                
+            return Ok(status);
+        }
+        [HttpPut]
+        [Route("updatexam")]
+        public async Task<IActionResult> UpExam([FromBody] MExam ex)
+        {
+            var status = await examService.update(ex);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpDelete]
+        [Route("deletexam")]
+        public async Task<IActionResult> DelExam([FromBody] MExam ex)
+        {
+            var status = await examService.delete(ex);
+            if (status.Status.Equals(false))
+            { 
+                return Ok(status);                
+            }
+            return Ok(status);
+        }
+        [HttpGet]
+        [Route("listexam")]
+        public IActionResult ListExam(string id)
+        {
+            return Ok(examService.List(id));
+        }
+        #endregion
+        #region "question"
+        [HttpPost]
+        [Route("addquestion")]
+        public async Task<IActionResult> CreQuestion([FromBody] MQuestion ques)
+        {
+            var status = await questionService.insert(ques);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpPut]
+        [Route("updatequestion")]
+        public async Task<IActionResult> UpQuestion([FromBody] MQuestion ques)
+        {
+            var status = await questionService.update(ques);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpDelete]
+        [Route("deletequestion")]
+        public async Task<IActionResult> DelQuestion([FromBody] MQuestion ques)
+        {
+            var status = await questionService.delete(ques);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpGet]
+        [Route("listquestion")]
+        public IActionResult ListQuestion(string id)
+        {
+            return Ok(questionService.List(id));
+        }
+        #endregion
+        #region "result"
+        [HttpPost]
+        [Route("addresult")]
+        public async Task<IActionResult> CreResult([FromBody] MResult re)
+        {
+            var status = await resultService.insert(re);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpPut]
+        [Route("updateresult")]
+        public async Task<IActionResult> UpResult([FromBody] MResult re)
+        {
+            var status = await resultService.update(re);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpDelete]
+        [Route("deleteresult")]
+        public async Task<IActionResult> DelResult(MResult re)
+        {
+            var status = await resultService.delete(re);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpGet]
+        [Route("listresult")]
+        public IActionResult ListResult([FromBody]MResult re)
+        {
+            return Ok(resultService.List(re.ExamID,re.UserID));
+        }
+        #endregion
     }
 }
