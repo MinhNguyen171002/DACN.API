@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Pomelo.EntityFrameworkCore.MySql;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,18 +26,26 @@ builder.Services.AddDbContext<DB>(options =>
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
                 .AddEntityFrameworkStores<DB>()
                 .AddDefaultTokenProviders();
-builder.Services.AddScoped<IUserRepositories, UserRepository>();
+builder.Services.AddCors(policy =>
+{
+    policy.AddPolicy("CorsPolicy", opt => opt
+        .AllowAnyOrigin()
+        .AllowAnyHeader()
+        .AllowAnyMethod());
+});
 
-builder.Services.AddScoped<ILevelRepositories, LevelRepository>();
+builder.Services.AddScoped<HttpClient>();
+
+builder.Services.AddScoped<IUserRepositories, UserRepository>();
 builder.Services.AddScoped<IExamRepositories, ExamRepository>();
 builder.Services.AddScoped<IQuestionRepositories, QuestionRepository>();
 builder.Services.AddScoped<IResultRepositories, ResultRepository>();
 
 builder.Services.AddTransient<UserService>();
-builder.Services.AddTransient<LevelService>();
 builder.Services.AddTransient<ExamService>();
 builder.Services.AddTransient<QuestionService>();
 builder.Services.AddTransient<ResultService>();
+
 
 builder.Services.AddAuthentication(options =>
 {
@@ -69,8 +76,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors("CorsPolicy");
 
 app.MapControllers();
 

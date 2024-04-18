@@ -3,6 +3,7 @@ using System;
 using API.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -16,13 +17,18 @@ namespace API.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "8.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("API.Enity.Exam", b =>
                 {
-                    b.Property<string>("ExamID")
-                        .HasColumnType("varchar(255)");
+                    b.Property<int>("ExamID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ExamID"));
 
                     b.Property<string>("ExamDescription")
                         .IsRequired()
@@ -35,43 +41,29 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("LevelID")
+                    b.Property<string>("Level")
                         .IsRequired()
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("longtext");
 
                     b.HasKey("ExamID");
-
-                    b.HasIndex("LevelID");
 
                     b.ToTable("exams");
                 });
 
-            modelBuilder.Entity("API.Enity.Level", b =>
-                {
-                    b.Property<string>("LevelID")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("LevelName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("LevelID");
-
-                    b.ToTable("levels");
-                });
-
             modelBuilder.Entity("API.Enity.Question", b =>
                 {
-                    b.Property<string>("QuestionID")
-                        .HasColumnType("varchar(255)");
+                    b.Property<int>("QuestionID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("QuestionID"));
 
                     b.Property<string>("CorrectAnswer")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("ExamID")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
+                    b.Property<int>("ExamID")
+                        .HasColumnType("int");
 
                     b.Property<string>("Question1")
                         .IsRequired()
@@ -102,12 +94,14 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Enity.Result", b =>
                 {
-                    b.Property<string>("ResultID")
-                        .HasColumnType("varchar(255)");
+                    b.Property<int>("ResultID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<string>("ExamID")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ResultID"));
+
+                    b.Property<int>("ExamID")
+                        .HasColumnType("int");
 
                     b.Property<int>("Score")
                         .HasColumnType("int");
@@ -178,6 +172,8 @@ namespace API.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("longtext");
@@ -257,7 +253,7 @@ namespace API.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("IdenityUser", (string)null);
+                    b.ToTable("AspNetUsers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -265,6 +261,8 @@ namespace API.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("longtext");
@@ -337,17 +335,6 @@ namespace API.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("API.Enity.Exam", b =>
-                {
-                    b.HasOne("API.Enity.Level", "level")
-                        .WithMany()
-                        .HasForeignKey("LevelID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("level");
                 });
 
             modelBuilder.Entity("API.Enity.Question", b =>

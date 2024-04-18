@@ -16,6 +16,7 @@ namespace API.Repositories
     {
         public UserRepository(DB dbContext) : base(dbContext)
         {
+
         }
         public void insertUser(User user)
         {
@@ -33,44 +34,6 @@ namespace API.Repositories
         }
     }
     #endregion
-    #region "level"
-    public interface ILevelRepositories : IRepository<Level>
-    {
-        public void insertLevel(Level level);
-        public void deleteLevel(Level level);
-        public void updateLevel(Level level);
-        public Level getbyid(object id);
-        public List<Level> Listall();
-    }
-    public class LevelRepository : RepositoryBase<Level>, ILevelRepositories
-    {
-        public LevelRepository(DB dbContext) : base(dbContext)
-        {
-
-        }
-        public void insertLevel(Level level)
-        {
-            _dbContext.levels.Add(level);
-        }
-        public void deleteLevel(Level level)
-        {
-            _dbContext.levels.Remove(level);
-        }
-        public void updateLevel(Level level)
-        {
-            _dbContext.levels.Attach(level);
-            _dbContext.Entry(level).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-        }
-        public Level getbyid(object id)
-        {
-            return _dbContext.levels.Find(id);
-        }
-        public List<Level> Listall()
-        {
-            return _dbContext.levels.ToList();
-        }
-    }
-    #endregion
     #region "exam"
     public interface IExamRepositories : IRepository<Exam>
     {
@@ -78,7 +41,7 @@ namespace API.Repositories
         public void deleteExam(Exam exam);
         public void updateExam(Exam exam);
         public Exam getbyid(object id);
-        public List<Exam> Listall(object id);
+/*        public List<Exam> Listall(object id);*/
     }
     public class ExamRepository : RepositoryBase<Exam>, IExamRepositories
     {
@@ -102,10 +65,10 @@ namespace API.Repositories
         {
             return _dbContext.exams.Find(id);
         }
-        public List<Exam> Listall(object id)
+/*        public List<Exam> Listall(object id)
         {
-            return _dbContext.exams.Where(x=>x.LevelID == (string)id).ToList();
-        }
+            return _dbContext.exams.Where(x=>x. == (string)id).ToList();
+        }*/
     }
     #endregion
     #region "question"
@@ -141,7 +104,7 @@ namespace API.Repositories
         }
         public List<Question> Listall(object id)
         {
-            return _dbContext.questions.Where(x => x.ExamID == (string)id).ToList();
+            return _dbContext.questions.Where(x => x.ExamID == (int)id).ToList();
         }
     }
     #endregion
@@ -182,7 +145,7 @@ namespace API.Repositories
             {
                 
             }
-            return _dbContext.results.Where(x => x.ExamID == (string)idExam && x.UserID == (string)idUser).ToList();
+            return _dbContext.results.Where(x => x.ExamID == (int)idExam && x.UserID == (string)idUser).ToList();
         }
     }
     #endregion

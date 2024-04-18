@@ -2,6 +2,8 @@
 using API.Enity;
 using API.Model;
 using API.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +23,6 @@ namespace API.Controllers.API
     {
         private DB dBContext;
         UserService userService;
-        LevelService levelService;
         ExamService examService;
         QuestionService questionService;
         ResultService resultService;
@@ -32,14 +33,13 @@ namespace API.Controllers.API
         {
             get;
         }
-        public AdminAPI(DB dBContext, UserService userService, LevelService levelService, 
+        public AdminAPI(DB dBContext, UserService userService, 
             ExamService examService, QuestionService questionService, ResultService resultService, 
             RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> _userManager, 
             SignInManager<IdentityUser> _signInManager, IConfiguration _configuration)
         {
             this.dBContext = dBContext;
             this.userService = userService;
-            this.levelService = levelService;
             this.examService = examService;
             this.questionService = questionService;
             this.resultService = resultService;
@@ -49,6 +49,8 @@ namespace API.Controllers.API
             this._configuration = _configuration;
         }
         #region "authentication"
+        
+
         [HttpPost]
         [AllowAnonymous]
         [Route("register")]
@@ -66,25 +68,24 @@ namespace API.Controllers.API
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
-            if (!result.Succeeded)
+            if (result.Succeeded)
             {
                 if (!await _roleManager.RoleExistsAsync(Role.Customer))
                 {
                     await _roleManager.CreateAsync(new IdentityRole(Role.Customer));
                 }
                 await _userManager.AddToRoleAsync(user, Role.Customer);
+                User user1 = new User()
+                {
+                    UserID = user.Id,
+                    UserName = model.UserName,
+                    Email = model.Email,
+                    SDT = model.SDT
+                };
+                userService.insert(user1);
+                return Ok(new Response { Status = true, Message = "Welcome" });
             }
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User creation failed! Please check user details and try again." });
-            
-            User user1 = new User()
-            {
-                UserID = user.Id,
-                UserName = model.UserName,
-                Email = model.Email,
-                SDT = model.SDT
-            };
-            userService.insert(user1);
-            return Ok(new Response { Status = true, Message = "Welcome" });
+            return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User creation failed! Please check user details and try again." });
         }
 
         [HttpPost]
@@ -120,59 +121,20 @@ namespace API.Controllers.API
             }
             return Unauthorized();
         }
-        [HttpPost]
+        [HttpGet]
         [Route("logout")]
         public async Task<IActionResult> SignOut()
         {
             await _signInManager.SignOutAsync();
             return Ok(new Response { Message = "Logout success!", Status = true });
         }
+
         #endregion
-        #region "level"
-        [HttpPost]
-        [Route("addlevel")]
-        public async Task<IActionResult> CreLevel([FromBody] MLevel lev)
-        {
-            var status = await levelService.insert(lev);
-            if (status.Status.Equals(false))
-            {
-                return Ok(status);
-            }
-            return Ok(status);
-        }
-        [HttpPut]
-        [Route("updatelevel")]
-        public async Task<IActionResult> UpLevel([FromBody] MLevel lev)
-        {
-            var status = await levelService.insert(lev);
-            if (status.Status.Equals(false))
-            {
-                return Ok(status);
-            }
-            return Ok(status);
-        }
-        [HttpDelete]
-        [Route("deletelevel")]
-        public async Task<IActionResult> DelLevel([FromBody] MLevel lev)
-        {
-            var status = await levelService.insert(lev);
-            if (status.Status.Equals(false))
-            {
-                return Ok(status);
-            }
-            return Ok(status);
-        }
-        [HttpGet]
-        [Route("listlevel")]
-        public IActionResult ListLevel()
-        {
-            return Ok(levelService.list());
-        }
-        #endregion
+        
         #region "exam"
         [HttpPost]
         [Route("addexam")]
-        public async Task<IActionResult> CreExam([FromBody] MExam ex)
+        public async Task<IActionResult> CreExam([FromBody] ExamDTO ex)
         {
             var status = await examService.insert(ex);
             if (status.Status.Equals(false))
@@ -183,7 +145,7 @@ namespace API.Controllers.API
         }
         [HttpPut]
         [Route("updatexam")]
-        public async Task<IActionResult> UpExam([FromBody] MExam ex)
+        public async Task<IActionResult> UpExam([FromBody] ExamDTO ex)
         {
             var status = await examService.update(ex);
             if (status.Status.Equals(false))
@@ -194,7 +156,7 @@ namespace API.Controllers.API
         }
         [HttpDelete]
         [Route("deletexam")]
-        public async Task<IActionResult> DelExam([FromBody] MExam ex)
+        public async Task<IActionResult> DelExam([FromBody] ExamDTO ex)
         {
             var status = await examService.delete(ex);
             if (status.Status.Equals(false))
@@ -203,17 +165,17 @@ namespace API.Controllers.API
             }
             return Ok(status);
         }
-        [HttpGet]
+/*        [HttpGet]
         [Route("listexam")]
         public IActionResult ListExam(string id)
         {
             return Ok(examService.List(id));
-        }
+        }*/
         #endregion
         #region "question"
         [HttpPost]
         [Route("addquestion")]
-        public async Task<IActionResult> CreQuestion([FromBody] MQuestion ques)
+        public async Task<IActionResult> CreQuestion([FromBody] QuestionDTO ques)
         {
             var status = await questionService.insert(ques);
             if (status.Status.Equals(false))
@@ -224,7 +186,7 @@ namespace API.Controllers.API
         }
         [HttpPut]
         [Route("updatequestion")]
-        public async Task<IActionResult> UpQuestion([FromBody] MQuestion ques)
+        public async Task<IActionResult> UpQuestion([FromBody] QuestionDTO ques)
         {
             var status = await questionService.update(ques);
             if (status.Status.Equals(false))
@@ -235,7 +197,7 @@ namespace API.Controllers.API
         }
         [HttpDelete]
         [Route("deletequestion")]
-        public async Task<IActionResult> DelQuestion([FromBody] MQuestion ques)
+        public async Task<IActionResult> DelQuestion([FromBody] QuestionDTO ques)
         {
             var status = await questionService.delete(ques);
             if (status.Status.Equals(false))
@@ -246,7 +208,7 @@ namespace API.Controllers.API
         }
         [HttpGet]
         [Route("listquestion")]
-        public IActionResult ListQuestion(string id)
+        public IActionResult ListQuestion(int id)
         {
             return Ok(questionService.List(id));
         }
@@ -254,7 +216,7 @@ namespace API.Controllers.API
         #region "result"
         [HttpPost]
         [Route("addresult")]
-        public async Task<IActionResult> CreResult([FromBody] MResult re)
+        public async Task<IActionResult> CreResult([FromBody] ResultDTO re)
         {
             var status = await resultService.insert(re);
             if (status.Status.Equals(false))
@@ -265,7 +227,7 @@ namespace API.Controllers.API
         }
         [HttpPut]
         [Route("updateresult")]
-        public async Task<IActionResult> UpResult([FromBody] MResult re)
+        public async Task<IActionResult> UpResult([FromBody] ResultDTO re)
         {
             var status = await resultService.update(re);
             if (status.Status.Equals(false))
@@ -276,7 +238,7 @@ namespace API.Controllers.API
         }
         [HttpDelete]
         [Route("deleteresult")]
-        public async Task<IActionResult> DelResult(MResult re)
+        public async Task<IActionResult> DelResult([FromBody]ResultDTO re)
         {
             var status = await resultService.delete(re);
             if (status.Status.Equals(false))
@@ -287,7 +249,7 @@ namespace API.Controllers.API
         }
         [HttpGet]
         [Route("listresult")]
-        public IActionResult ListResult([FromBody]MResult re)
+        public IActionResult ListResult([FromBody]ResultDTO re)
         {
             return Ok(resultService.List(re.ExamID,re.UserID));
         }

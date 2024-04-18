@@ -41,83 +41,7 @@ namespace API.Services
             Save();
         }
     }
-    #endregion
-    #region "level"
-    public class LevelService
-    {
-        private readonly UserManager<IdentityUser> _userManager;
-        private DB dBContext;
-        private ILevelRepositories levelRepositories;
-        public LevelService(DB dBContext, UserManager<IdentityUser> _userManager)
-        {
-            this.dBContext = dBContext;
-            this.levelRepositories = new LevelRepository(dBContext);
-            this._userManager = _userManager;
-        }
-        public void Save()
-        {
-            dBContext.SaveChanges();
-        }
-        public async Task<Response> insert(MLevel lev)
-        {
-            var user = await _userManager.FindByNameAsync(lev.Username);
-            var roles = await _userManager.GetRolesAsync(user);
-            if (roles.FirstOrDefault() == "admin")
-            {
-                Level level = new Level()
-                {
-                    LevelID = lev.LevelID,
-                    LevelName = lev.LevelName,
-                };
-                levelRepositories.insertLevel(level);
-                Save();
-                return new Response { Status = true, Message = "Success" };
-            }
-            return new Response { Status = false, Message = "Need authencation" };
-        }
-        public async Task<Response> update(MLevel lev)
-        {
-            var user = await _userManager.FindByNameAsync(lev.Username);
-            var roles = await _userManager.GetRolesAsync(user);
-            if (roles.FirstOrDefault() == "admin")
-            {
-                var level = getbyid(lev.LevelID);
-                if (level == null)
-                {
-                    levelRepositories.updateLevel(level);
-                    Save();
-                    return new Response { Status = true, Message = "Success" };
-                }
-            }
-            return new Response { Status = false, Message = "Need authencation" };
-        }
-        public async Task<Response> delete(MLevel lev)
-        {
-            var user = await _userManager.FindByNameAsync(lev.Username);
-            var roles = await _userManager.GetRolesAsync(user);
-            if (roles.FirstOrDefault() == "admin")
-            {
-                var level = getbyid(lev.LevelID);
-                if (level == null)
-                {
-                    levelRepositories.deleteLevel(level);
-                    Save();
-                    return new Response { Status = true, Message = "Success" };
-                }
-            }
-            return new Response { Status = false, Message = "Need authencation" };
-
-        }
-        public Level getbyid(string id)
-        {
-            return levelRepositories.getbyid(id);
-        }
-        public List<Level> list()
-        {
-            return levelRepositories.Listall();
-        }
-    }
-    #endregion
+    #endregion  
     #region "exam"
     public class ExamService
     {
@@ -134,7 +58,7 @@ namespace API.Services
         {
             dBContext.SaveChanges();
         }
-        public async Task<Response> insert(MExam ex)
+        public async Task<Response> insert(ExamDTO ex)
         {
             var user = await _userManager.FindByNameAsync(ex.Username);
             var roles = await _userManager.GetRolesAsync(user);
@@ -153,7 +77,7 @@ namespace API.Services
             }
             return new Response { Status = false, Message = "Need authencation" };
         }
-        public async Task<Response> update(MExam ex)
+        public async Task<Response> update(ExamDTO ex)
         {
             var user = await _userManager.FindByNameAsync(ex.Username);
             var roles = await _userManager.GetRolesAsync(user);
@@ -169,13 +93,13 @@ namespace API.Services
             }
             return new Response { Status = false, Message = "Need authencation" };
         }
-        public async Task<Response> delete(MExam ex)
+        public async Task<Response> delete(ExamDTO ex)
         {
             var user = await _userManager.FindByNameAsync(ex.Username);
             var roles = await _userManager.GetRolesAsync(user);
             if (roles.FirstOrDefault() == "admin")
             {
-                var exam = GetbyId(ex.ExamID);
+                Exam exam = GetbyId(ex.ExamID);
                 if (exam == null)
                 {
                     examRepositories.deleteExam(exam);
@@ -185,14 +109,14 @@ namespace API.Services
             }
             return new Response { Status = false, Message = "Need authencation" };
         }
-        public Exam GetbyId(string id)
+        public Exam GetbyId(int id)
         {
             return examRepositories.getbyid(id);
         }
-        public List<Exam> List(string id)
+/*        public List<Exam> List(string id)
         {
             return examRepositories.Listall(id);
-        }
+        }*/
     }
     #endregion
     #region "question"
@@ -211,7 +135,7 @@ namespace API.Services
         {
             dBContext.SaveChanges();
         }
-        public async Task<Response> insert(MQuestion ques)
+        public async Task<Response> insert(QuestionDTO ques)
         {
             var user = await _userManager.FindByNameAsync(ques.Username);
             var roles = await _userManager.GetRolesAsync(user);
@@ -234,7 +158,7 @@ namespace API.Services
             }
             return new Response { Status = false, Message = "Need authencation" };
         }
-        public async Task<Response> update(MQuestion ques)
+        public async Task<Response> update(QuestionDTO ques)
         {
             var user = await _userManager.FindByNameAsync(ques.Username);
             var roles = await _userManager.GetRolesAsync(user);
@@ -250,7 +174,7 @@ namespace API.Services
             }
             return new Response { Status = false, Message = "Need authencation" };
         }
-        public async Task<Response> delete(MQuestion ques)
+        public async Task<Response> delete(QuestionDTO ques)
         {
             var user = await _userManager.FindByNameAsync(ques.Username);
             var roles = await _userManager.GetRolesAsync(user);
@@ -266,11 +190,11 @@ namespace API.Services
             }
             return new Response { Status = false, Message = "Need authencation" };
         }
-        public Question GetbyId(string id)
+        public Question GetbyId(int id)
         {
             return questionRepositories.getbyid(id);
         }
-        public List<Question> List(string id)
+        public List<Question> List(int id)
         {
             return questionRepositories.Listall(id);
         }
@@ -292,7 +216,7 @@ namespace API.Services
         {
             dBContext.SaveChanges();
         }
-        public async Task<Response> insert(MResult re)
+        public async Task<Response> insert(ResultDTO re)
         {
             var user = await _userManager.FindByNameAsync(re.Username);
             var roles = await _userManager.GetRolesAsync(user);
@@ -311,7 +235,7 @@ namespace API.Services
             }
             return new Response { Status = false, Message = "Need authencation" };
         }
-        public async Task<Response> update(MResult re)
+        public async Task<Response> update(ResultDTO re)
         {
             var user = await _userManager.FindByNameAsync(re.Username);
             var roles = await _userManager.GetRolesAsync(user);
@@ -327,7 +251,7 @@ namespace API.Services
             }
             return new Response { Status = false, Message = "Need authencation" };
         }
-        public async Task<Response> delete(MResult re)
+        public async Task<Response> delete(ResultDTO re)
         {
             var user = await _userManager.FindByNameAsync(re.Username);
             var roles = await _userManager.GetRolesAsync(user);
@@ -343,11 +267,11 @@ namespace API.Services
             }
             return new Response { Status = false, Message = "Need authencation" };
         }
-        public Result GetbyId(string id)
+        public Result GetbyId(int id)
         {
             return resultRepositories.getbyid(id);
         }
-        public List<Result> List(string idExam, string idUser)
+        public List<Result> List(int idExam, string idUser)
         {
             return resultRepositories.Listall(idExam,idUser);
         }
