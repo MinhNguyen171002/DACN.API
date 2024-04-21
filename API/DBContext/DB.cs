@@ -10,17 +10,19 @@ namespace API.DBContext
     {
         public DbSet<User> users { get; set; }
         public DbSet<Result> results { get; set; }
-        public DbSet<Question> questions { get; set; }
+        public DbSet<Test> tests { get; set; }
         public DbSet<Exam> exams { get; set; }
+        public DbSet<Practice> practices { get; set; }
+        public DbSet<PracticeComplete> practiceCompletes { get; set; }
+        public DbSet<TestComplete> testCompletes { get; set; }
         public DB(DbContextOptions<DB> options) : base(options)
         {
         }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            /*builder.Entity<IdentityUser>().ToTable("IdenityUser");
 
-            const string ADMIN_ID = "a18be9c0-aa65-4af8-bd17-00bd9344e575";
+            /*const string ADMIN_ID = "a18be9c0-aa65-4af8-bd17-00bd9344e575";
             const string ROLE_ID = "ad376a8f-9eab-4bb9-9fca-30b01540f445";
 
             builder.Entity<IdentityRole>().HasData(new IdentityRole

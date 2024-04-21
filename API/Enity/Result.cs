@@ -10,10 +10,10 @@ namespace API.Enity
         public int ResultID { get; set; }
         public int Score { get; set; }
         public string UserID { get; set; }
-        public int ExamID { get; set; }
+        public int PracticeID { get; set; }
         [ForeignKey(nameof(UserID))]
-        public User user { get; set; }
-        [ForeignKey(nameof(ExamID))]
-        public Exam exam { get; set; }
+        public virtual User? user {get; set;}
+        [ForeignKey(nameof(PracticeID))]
+        public virtual Practice? practice {get; set;}
     }
 }

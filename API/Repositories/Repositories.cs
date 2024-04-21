@@ -1,6 +1,7 @@
 ﻿using API.Data;
 using API.DBContext;
 using API.Enity;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace API.Repositories
 {
@@ -34,6 +35,7 @@ namespace API.Repositories
         }
     }
     #endregion
+
     #region "exam"
     public interface IExamRepositories : IRepository<Exam>
     {
@@ -71,40 +73,40 @@ namespace API.Repositories
         }*/
     }
     #endregion
-    #region "question"
-    public interface IQuestionRepositories : IRepository<Question>
+    #region "test"
+    public interface ITestRepositories : IRepository<Test>
     {
-        public void insertQuestion(Question question);
-        public void deletetQuestion(Question question);
-        public void updateQuestion(Question question);
-        public Question getbyid(object id);
-        public List<Question> Listall(object id);
+        public void insertTest(Test test);
+        public void deleteTest(Test test);
+        public void updateTest(Test test);
+        public Test getbyid(object id);
+        public List<Test> Listall(object id);
     }
-    public class QuestionRepository : RepositoryBase<Question>, IQuestionRepositories
+    public class TestRepository : RepositoryBase<Test>, ITestRepositories
     {
-        public QuestionRepository(DB dbContext) : base(dbContext)
+        public TestRepository(DB dbContext) : base(dbContext)
         {
         }
-        public void insertQuestion(Question question)
+        public void insertTest(Test test)
         {
-            _dbContext.questions.Add(question);
+            _dbContext.tests.Add(test);
         }
-        public void deletetQuestion(Question question)
+        public void deleteTest(Test test)
         {
-            _dbContext.questions.Remove(question);
+            _dbContext.tests.Remove(test);
         }
-        public void updateQuestion(Question question)
+        public void updateTest(Test test)
         {
-            _dbContext.questions.Attach(question);
-            _dbContext.Entry(question).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            _dbContext.tests.Attach(test);
+            _dbContext.Entry(test).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
         }
-        public Question getbyid(object id)
+        public Test getbyid(object id)
         {
-            return _dbContext.questions.Find(id);
+            return _dbContext.tests.Find(id);
         }
-        public List<Question> Listall(object id)
+        public List<Test> Listall(object id)
         {
-            return _dbContext.questions.Where(x => x.ExamID == (int)id).ToList();
+            return _dbContext.tests.Where(x => x.PracticeID == (int)id).ToList();
         }
     }
     #endregion
@@ -115,12 +117,12 @@ namespace API.Repositories
         public void deleteResult(Result result);
         public void updateResult(Result result);
         public Result getbyid(object id);
-        public List<Result> Listall(object idExam, object idUser);
     }
     public class ResultRepository : RepositoryBase<Result>, IResultRepositories
     {
         public ResultRepository(DB dbContext) : base(dbContext)
         {
+
         }
         public void insertResult(Result result)
         {
@@ -138,14 +140,6 @@ namespace API.Repositories
         public Result getbyid(object id)
         {
             return _dbContext.results.Find(id);
-        }
-        public List<Result> Listall(object idExam,object idUser)
-        {
-            if(idExam == null && idUser == null)
-            {
-                
-            }
-            return _dbContext.results.Where(x => x.ExamID == (int)idExam && x.UserID == (string)idUser).ToList();
         }
     }
     #endregion

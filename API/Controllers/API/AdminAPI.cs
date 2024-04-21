@@ -24,7 +24,7 @@ namespace API.Controllers.API
         private DB dBContext;
         UserService userService;
         ExamService examService;
-        QuestionService questionService;
+        TestService testService;
         ResultService resultService;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
@@ -34,14 +34,14 @@ namespace API.Controllers.API
             get;
         }
         public AdminAPI(DB dBContext, UserService userService, 
-            ExamService examService, QuestionService questionService, ResultService resultService, 
+            ExamService examService, TestService testService, ResultService resultService, 
             RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> _userManager, 
             SignInManager<IdentityUser> _signInManager, IConfiguration _configuration)
         {
             this.dBContext = dBContext;
             this.userService = userService;
             this.examService = examService;
-            this.questionService = questionService;
+            this.testService = testService;
             this.resultService = resultService;
             this._roleManager = roleManager;
             this._userManager = _userManager;
@@ -130,7 +130,7 @@ namespace API.Controllers.API
         }
 
         #endregion
-        
+    
         #region "exam"
         [HttpPost]
         [Route("addexam")]
@@ -172,12 +172,13 @@ namespace API.Controllers.API
             return Ok(examService.List(id));
         }*/
         #endregion
-        #region "question"
+
+        #region "test"
         [HttpPost]
-        [Route("addquestion")]
-        public async Task<IActionResult> CreQuestion([FromBody] QuestionDTO ques)
+        [Route("addtest")]
+        public async Task<IActionResult> CreTest([FromBody] TestDTO test)
         {
-            var status = await questionService.insert(ques);
+            var status = await testService.insert(test);
             if (status.Status.Equals(false))
             {
                 return Ok(status);
@@ -186,9 +187,9 @@ namespace API.Controllers.API
         }
         [HttpPut]
         [Route("updatequestion")]
-        public async Task<IActionResult> UpQuestion([FromBody] QuestionDTO ques)
+        public async Task<IActionResult> UpQuestion([FromBody] TestDTO ques)
         {
-            var status = await questionService.update(ques);
+            var status = await testService.update(ques);
             if (status.Status.Equals(false))
             {
                 return Ok(status);
@@ -196,10 +197,10 @@ namespace API.Controllers.API
             return Ok(status);
         }
         [HttpDelete]
-        [Route("deletequestion")]
-        public async Task<IActionResult> DelQuestion([FromBody] QuestionDTO ques)
+        [Route("deletetest")]
+        public async Task<IActionResult> DelQuestion([FromBody] TestDTO ques)
         {
-            var status = await questionService.delete(ques);
+            var status = await testService.delete(ques);
             if (status.Status.Equals(false))
             {
                 return Ok(status);
@@ -207,29 +208,19 @@ namespace API.Controllers.API
             return Ok(status);
         }
         [HttpGet]
-        [Route("listquestion")]
+        [Route("listtest")]
         public IActionResult ListQuestion(int id)
         {
-            return Ok(questionService.List(id));
+            return Ok(testService.List(id));
         }
         #endregion
+
         #region "result"
         [HttpPost]
         [Route("addresult")]
         public async Task<IActionResult> CreResult([FromBody] ResultDTO re)
         {
             var status = await resultService.insert(re);
-            if (status.Status.Equals(false))
-            {
-                return Ok(status);
-            }
-            return Ok(status);
-        }
-        [HttpPut]
-        [Route("updateresult")]
-        public async Task<IActionResult> UpResult([FromBody] ResultDTO re)
-        {
-            var status = await resultService.update(re);
             if (status.Status.Equals(false))
             {
                 return Ok(status);
@@ -246,12 +237,6 @@ namespace API.Controllers.API
                 return Ok(status);
             }
             return Ok(status);
-        }
-        [HttpGet]
-        [Route("listresult")]
-        public IActionResult ListResult([FromBody]ResultDTO re)
-        {
-            return Ok(resultService.List(re.ExamID,re.UserID));
         }
         #endregion
     }
