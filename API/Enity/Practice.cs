@@ -11,6 +11,6 @@ namespace API.Enity
         public int ExamID { get; set; }
         [ForeignKey(nameof(ExamID))]
         public virtual Exam? exam { get; set; }
-        public virtual ICollection<Test>? tests { get; set; }
+        public virtual ICollection<Sentence>? sentences { get; set; }
     }
 }

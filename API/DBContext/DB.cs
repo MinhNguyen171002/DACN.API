@@ -10,11 +10,12 @@ namespace API.DBContext
     {
         public DbSet<User> users { get; set; }
         public DbSet<Result> results { get; set; }
-        public DbSet<Test> tests { get; set; }
+        public DbSet<Question> questions { get; set; }
         public DbSet<Exam> exams { get; set; }
         public DbSet<Practice> practices { get; set; }
         public DbSet<PracticeComplete> practiceCompletes { get; set; }
-        public DbSet<TestComplete> testCompletes { get; set; }
+        public DbSet<QuestionComplete> questionCompletes { get; set; }
+        public DbSet<Sentence> sentences { get; set; }
         public DB(DbContextOptions<DB> options) : base(options)
         {
         }

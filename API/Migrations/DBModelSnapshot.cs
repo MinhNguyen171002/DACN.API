@@ -67,12 +67,6 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Enity.PracticeComplete", b =>
                 {
-                    b.Property<int>("PCId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("PCId"));
-
                     b.Property<int>("PracticeID")
                         .HasColumnType("int");
 
@@ -86,13 +80,65 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.HasKey("PCId");
-
-                    b.HasIndex("PracticeID");
+                    b.HasKey("PracticeID");
 
                     b.HasIndex("UserID");
 
                     b.ToTable("practiceCompletes");
+                });
+
+            modelBuilder.Entity("API.Enity.Question", b =>
+                {
+                    b.Property<int>("QuestionID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("QuestionID"));
+
+                    b.Property<string>("Answer1")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Answer2")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Answer3")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Answer4")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("CorrectAnswer")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("QuestionContext")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("SentenceID")
+                        .HasColumnType("int");
+
+                    b.HasKey("QuestionID");
+
+                    b.HasIndex("SentenceID");
+
+                    b.ToTable("questions");
+                });
+
+            modelBuilder.Entity("API.Enity.QuestionComplete", b =>
+                {
+                    b.Property<int>("QuestionID")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("IsCorrect")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int?>("PracticeCompletePracticeID")
+                        .HasColumnType("int");
+
+                    b.HasKey("QuestionID");
+
+                    b.HasIndex("PracticeCompletePracticeID");
+
+                    b.ToTable("questionCompletes");
                 });
 
             modelBuilder.Entity("API.Enity.Result", b =>
@@ -122,69 +168,25 @@ namespace API.Migrations
                     b.ToTable("results");
                 });
 
-            modelBuilder.Entity("API.Enity.Test", b =>
+            modelBuilder.Entity("API.Enity.Sentence", b =>
                 {
-                    b.Property<int>("TestID")
+                    b.Property<int>("SentenceId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("TestID"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("SentenceId"));
 
-                    b.Property<string>("Answer1")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Answer2")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Answer3")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Answer4")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("CorrectAnswer")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("CorrectDescription")
+                    b.Property<string>("FilePath")
                         .HasColumnType("longtext");
 
                     b.Property<int>("PracticeID")
                         .HasColumnType("int");
 
-                    b.Property<string>("Question")
-                        .HasColumnType("longtext");
-
-                    b.HasKey("TestID");
+                    b.HasKey("SentenceId");
 
                     b.HasIndex("PracticeID");
 
-                    b.ToTable("tests");
-                });
-
-            modelBuilder.Entity("API.Enity.TestComplete", b =>
-                {
-                    b.Property<int>("TCId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("TCId"));
-
-                    b.Property<bool?>("IsCorrect")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<int?>("PracticeCompletePCId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TestID")
-                        .HasColumnType("int");
-
-                    b.HasKey("TCId");
-
-                    b.HasIndex("PracticeCompletePCId");
-
-                    b.HasIndex("TestID");
-
-                    b.ToTable("testCompletes");
+                    b.ToTable("sentences");
                 });
 
             modelBuilder.Entity("API.Enity.User", b =>
@@ -233,6 +235,14 @@ namespace API.Migrations
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "ad376a8f-9eab-4bb9-9fca-30b01540f445",
+                            Name = "admin",
+                            NormalizedName = "admin"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -322,6 +332,24 @@ namespace API.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "a18be9c0-aa65-4af8-bd17-00bd9344e575",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "cfd99109-3757-4013-9613-1b655877f03d",
+                            Email = "admin@gmail.com",
+                            EmailConfirmed = false,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "admin@gmail.com",
+                            NormalizedUserName = "admin",
+                            PasswordHash = "AQAAAAIAAYagAAAAEC3ogyy4VZGP12AClaWTHLbEnvHfdrG4em6KP7FdHWk7/FlowI4uK02ExopMww4G1g==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "",
+                            TwoFactorEnabled = false,
+                            UserName = "admin"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -384,6 +412,13 @@ namespace API.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "a18be9c0-aa65-4af8-bd17-00bd9344e575",
+                            RoleId = "ad376a8f-9eab-4bb9-9fca-30b01540f445"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -435,6 +470,32 @@ namespace API.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("API.Enity.Question", b =>
+                {
+                    b.HasOne("API.Enity.Sentence", "sentences")
+                        .WithMany("questions")
+                        .HasForeignKey("SentenceID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("sentences");
+                });
+
+            modelBuilder.Entity("API.Enity.QuestionComplete", b =>
+                {
+                    b.HasOne("API.Enity.PracticeComplete", null)
+                        .WithMany("QuestionCompletes")
+                        .HasForeignKey("PracticeCompletePracticeID");
+
+                    b.HasOne("API.Enity.Question", "test")
+                        .WithMany()
+                        .HasForeignKey("QuestionID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("test");
+                });
+
             modelBuilder.Entity("API.Enity.Result", b =>
                 {
                     b.HasOne("API.Enity.Practice", "practice")
@@ -454,30 +515,15 @@ namespace API.Migrations
                     b.Navigation("user");
                 });
 
-            modelBuilder.Entity("API.Enity.Test", b =>
+            modelBuilder.Entity("API.Enity.Sentence", b =>
                 {
-                    b.HasOne("API.Enity.Practice", "practice")
-                        .WithMany("tests")
+                    b.HasOne("API.Enity.Practice", "Practice")
+                        .WithMany("sentences")
                         .HasForeignKey("PracticeID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("practice");
-                });
-
-            modelBuilder.Entity("API.Enity.TestComplete", b =>
-                {
-                    b.HasOne("API.Enity.PracticeComplete", null)
-                        .WithMany("TestCompletes")
-                        .HasForeignKey("PracticeCompletePCId");
-
-                    b.HasOne("API.Enity.Test", "test")
-                        .WithMany()
-                        .HasForeignKey("TestID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("test");
+                    b.Navigation("Practice");
                 });
 
             modelBuilder.Entity("API.Enity.User", b =>
@@ -549,12 +595,17 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Enity.Practice", b =>
                 {
-                    b.Navigation("tests");
+                    b.Navigation("sentences");
                 });
 
             modelBuilder.Entity("API.Enity.PracticeComplete", b =>
                 {
-                    b.Navigation("TestCompletes");
+                    b.Navigation("QuestionCompletes");
+                });
+
+            modelBuilder.Entity("API.Enity.Sentence", b =>
+                {
+                    b.Navigation("questions");
                 });
 #pragma warning restore 612, 618
         }

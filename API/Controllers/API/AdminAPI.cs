@@ -22,114 +22,19 @@ namespace API.Controllers.API
     public class AdminAPI : Controller
     {
         private DB dBContext;
-        UserService userService;
         ExamService examService;
-        TestService testService;
+        QuestionService questionService;
         ResultService resultService;
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly IConfiguration _configuration;
-        private RoleManager<IdentityRole> _roleManager
-        {
-            get;
-        }
-        public AdminAPI(DB dBContext, UserService userService, 
-            ExamService examService, TestService testService, ResultService resultService, 
-            RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> _userManager, 
-            SignInManager<IdentityUser> _signInManager, IConfiguration _configuration)
+        PracticeService practiceService;
+        public AdminAPI(DB dBContext,ExamService examService, QuestionService questionService, ResultService resultService,
+            PracticeService practiceService)
         {
             this.dBContext = dBContext;
-            this.userService = userService;
             this.examService = examService;
-            this.testService = testService;
+            this.questionService = questionService;
             this.resultService = resultService;
-            this._roleManager = roleManager;
-            this._userManager = _userManager;
-            this._signInManager = _signInManager;
-            this._configuration = _configuration;
+            this.practiceService = practiceService;
         }
-        #region "authentication"
-        
-
-        [HttpPost]
-        [AllowAnonymous]
-        [Route("register")]
-        public async Task<IActionResult> Register([FromBody] Register model)
-        {
-            var userExists = await _userManager.FindByNameAsync(model.UserName);
-            if (userExists != null)
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User already exists!" });
-
-            IdentityUser user = new IdentityUser()
-            {
-                Email = model.Email,
-                SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.UserName
-            };
-
-            var result = await _userManager.CreateAsync(user, model.Password);
-            if (result.Succeeded)
-            {
-                if (!await _roleManager.RoleExistsAsync(Role.Customer))
-                {
-                    await _roleManager.CreateAsync(new IdentityRole(Role.Customer));
-                }
-                await _userManager.AddToRoleAsync(user, Role.Customer);
-                User user1 = new User()
-                {
-                    UserID = user.Id,
-                    UserName = model.UserName,
-                    Email = model.Email,
-                    SDT = model.SDT
-                };
-                userService.insert(user1);
-                return Ok(new Response { Status = true, Message = "Welcome" });
-            }
-            return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User creation failed! Please check user details and try again." });
-        }
-
-        [HttpPost]
-        [Route("login")]
-        public async Task<IActionResult> SignIn([FromBody] LoginModel login)
-        {
-            var user = await _userManager.FindByNameAsync(login.Username);
-            if (user != null && await _userManager.CheckPasswordAsync(user, login.Password) && (await _signInManager.PasswordSignInAsync(user, login.Password, false, false)).Succeeded)
-            {
-                var userRoles = await _userManager.GetRolesAsync(user);
-
-                var authClaims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim("id", user.Id)
-                };
-                foreach (var userRole in userRoles)
-                {
-                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-                }
-                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-                var token = new JwtSecurityToken(
-                    expires: DateTime.UtcNow.AddSeconds(300),
-                    claims: authClaims,
-                    signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-                );
-                return Ok(new LoginResponse
-                {
-                    Token = new JwtSecurityTokenHandler().WriteToken(token),
-                    Status = true
-                });
-            }
-            return Unauthorized();
-        }
-        [HttpGet]
-        [Route("logout")]
-        public async Task<IActionResult> SignOut()
-        {
-            await _signInManager.SignOutAsync();
-            return Ok(new Response { Message = "Logout success!", Status = true });
-        }
-
-        #endregion
     
         #region "exam"
         [HttpPost]
@@ -165,20 +70,20 @@ namespace API.Controllers.API
             }
             return Ok(status);
         }
-/*        [HttpGet]
-        [Route("listexam")]
-        public IActionResult ListExam(string id)
+        [HttpGet]
+        [Route("getexams")]
+        public IActionResult ListExam(string skill)
         {
-            return Ok(examService.List(id));
-        }*/
+            return Ok(examService.List(skill));
+        }
         #endregion
 
-        #region "test"
+        #region "question"
         [HttpPost]
-        [Route("addtest")]
-        public async Task<IActionResult> CreTest([FromBody] TestDTO test)
+        [Route("addquestion")]
+        public async Task<IActionResult> CreQuestion([FromBody] QuestionDTO ques)
         {
-            var status = await testService.insert(test);
+            var status = await questionService.insert(ques);
             if (status.Status.Equals(false))
             {
                 return Ok(status);
@@ -187,9 +92,9 @@ namespace API.Controllers.API
         }
         [HttpPut]
         [Route("updatequestion")]
-        public async Task<IActionResult> UpQuestion([FromBody] TestDTO ques)
+        public async Task<IActionResult> UpQuestion([FromBody] QuestionDTO ques)
         {
-            var status = await testService.update(ques);
+            var status = await questionService.update(ques);
             if (status.Status.Equals(false))
             {
                 return Ok(status);
@@ -197,10 +102,10 @@ namespace API.Controllers.API
             return Ok(status);
         }
         [HttpDelete]
-        [Route("deletetest")]
-        public async Task<IActionResult> DelQuestion([FromBody] TestDTO ques)
+        [Route("updatequestion")]
+        public async Task<IActionResult> DelQuestion([FromBody] QuestionDTO ques)
         {
-            var status = await testService.delete(ques);
+            var status = await questionService.delete(ques);
             if (status.Status.Equals(false))
             {
                 return Ok(status);
@@ -208,10 +113,10 @@ namespace API.Controllers.API
             return Ok(status);
         }
         [HttpGet]
-        [Route("listtest")]
+        [Route("listquestion")]
         public IActionResult ListQuestion(int id)
         {
-            return Ok(testService.List(id));
+            return Ok(questionService.List(id));
         }
         #endregion
 
@@ -237,6 +142,48 @@ namespace API.Controllers.API
                 return Ok(status);
             }
             return Ok(status);
+        }
+        #endregion
+
+        #region "practice"
+        [HttpPost]
+        [Route("addpractice")]
+        public async Task<IActionResult> CrePractice([FromBody] PracticeDTO pra)
+        {
+            var status = await practiceService.insert(pra);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpPut]
+        [Route("updatpractice")]
+        public async Task<IActionResult> UpPractice([FromBody] PracticeDTO pra)
+        {
+            var status = await practiceService.update(pra);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpDelete]
+        [Route("deletpractice")]
+        public async Task<IActionResult> DelPractice([FromBody] PracticeDTO pra)
+        {
+            var status = await practiceService.delete(pra);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpGet]
+        [Route("getpractices")]
+        public IActionResult ListPratice(int id)
+        {
+            return Ok(practiceService.List(id));
         }
         #endregion
     }

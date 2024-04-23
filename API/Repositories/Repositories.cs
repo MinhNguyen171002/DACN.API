@@ -1,6 +1,7 @@
 ﻿using API.Data;
 using API.DBContext;
 using API.Enity;
+using API.Model;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace API.Repositories
@@ -43,7 +44,8 @@ namespace API.Repositories
         public void deleteExam(Exam exam);
         public void updateExam(Exam exam);
         public Exam getbyid(object id);
-/*        public List<Exam> Listall(object id);*/
+        public List<Exam> Listall(object id);
+        public int Count(object id);
     }
     public class ExamRepository : RepositoryBase<Exam>, IExamRepositories
     {
@@ -67,49 +69,55 @@ namespace API.Repositories
         {
             return _dbContext.exams.Find(id);
         }
-/*        public List<Exam> Listall(object id)
+        public List<Exam> Listall(object skill)
         {
-            return _dbContext.exams.Where(x=>x. == (string)id).ToList();
-        }*/
+            return _dbContext.exams.Where(x => x.Skill == (string)skill).ToList();
+        }
+        public int Count(object id)
+        {
+            return _dbContext.practices.Where(x=>x.ExamID == (int)id).Count();
+        }
     }
     #endregion
-    #region "test"
-    public interface ITestRepositories : IRepository<Test>
+
+    #region "question"
+    public interface IQuestionRepositories : IRepository<Question>
     {
-        public void insertTest(Test test);
-        public void deleteTest(Test test);
-        public void updateTest(Test test);
-        public Test getbyid(object id);
-        public List<Test> Listall(object id);
+        public void insertQuestion(Question test);
+        public void deleteQuestion(Question test);
+        public void updateQuestion(Question test);
+        public Question getbyid(object id);
+        public List<Question> Listall(object id);
     }
-    public class TestRepository : RepositoryBase<Test>, ITestRepositories
+    public class QuestionRepository : RepositoryBase<Question>, IQuestionRepositories
     {
-        public TestRepository(DB dbContext) : base(dbContext)
+        public QuestionRepository(DB dbContext) : base(dbContext)
         {
         }
-        public void insertTest(Test test)
+        public void insertQuestion(Question test)
         {
-            _dbContext.tests.Add(test);
+            _dbContext.questions.Add(test);
         }
-        public void deleteTest(Test test)
+        public void deleteQuestion(Question test)
         {
-            _dbContext.tests.Remove(test);
+            _dbContext.questions.Remove(test);
         }
-        public void updateTest(Test test)
+        public void updateQuestion(Question test)
         {
-            _dbContext.tests.Attach(test);
+            _dbContext.questions.Attach(test);
             _dbContext.Entry(test).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
         }
-        public Test getbyid(object id)
+        public Question getbyid(object id)
         {
-            return _dbContext.tests.Find(id);
+            return _dbContext.questions.Find(id);
         }
-        public List<Test> Listall(object id)
+        public List<Question> Listall(object id)
         {
-            return _dbContext.tests.Where(x => x.PracticeID == (int)id).ToList();
+            return _dbContext.questions.Where(x => x.SentenceID == (int)id).ToList();
         }
     }
     #endregion
+
     #region "result"
     public interface IResultRepositories : IRepository<Result>
     {
@@ -140,6 +148,94 @@ namespace API.Repositories
         public Result getbyid(object id)
         {
             return _dbContext.results.Find(id);
+        }
+    }
+    #endregion
+
+    #region "practice"
+
+    public interface IPracticeRepositories : IRepository<Practice>
+    {
+        public void insertPractice(Practice practice);
+        public void deletePractice(Practice practice);
+        public void updatePractice(Practice practice);
+        public Practice getbyid(object id);
+        public List<Practice> Listall(object id);
+        public int Count(object id);
+    }
+    public class PracticeRepository : RepositoryBase<Practice>, IPracticeRepositories
+    {
+        public PracticeRepository(DB dbContext) : base(dbContext)
+        {
+
+        }
+        public void insertPractice(Practice practice)
+        {
+            _dbContext.practices.Add(practice);
+        }
+        public void deletePractice(Practice practice)
+        {
+            _dbContext.practices.Remove(practice);
+        }
+        public void updatePractice(Practice practice)
+        {
+            _dbContext.practices.Attach(practice);
+            _dbContext.Entry(practice).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+        }
+        public Practice getbyid(object id)
+        {
+            return _dbContext.practices.Find(id);
+        }
+        public List<Practice> Listall(object id)
+        {
+            return _dbContext.practices.Where(x => x.ExamID.Equals((int)id)).ToList();
+        }
+        public int Count(object id)
+        {
+            return _dbContext.questions.Where(x => x.SentenceID.Equals((int)id)).Count();
+        }
+    }
+    #endregion
+
+    #region "practicecomplete"
+    public interface IPractceCompleteRepositories : IRepository<PracticeComplete>
+    {
+        public void insertPraComplete(PracticeComplete pracom);
+        public void deletePraComplete(PracticeComplete pracom);
+        public void updatePraComplete(PracticeComplete pracom);
+        public PracticeComplete getbyid(object id);
+        public int Count(object id);
+    }
+    public class PractceCompleteRepository : RepositoryBase<PracticeComplete>, IPractceCompleteRepositories
+    {
+        public PractceCompleteRepository(DB dbContext) : base(dbContext)
+        {
+
+        }
+        public void insertPraComplete(PracticeComplete pracom)
+        {
+            _dbContext.practiceCompletes.Add(pracom);
+        }
+        public void deletePraComplete(PracticeComplete pracom)
+        {
+            _dbContext.practiceCompletes.Remove(pracom);
+        }
+        public void updatePraComplete(PracticeComplete pracom)
+        {
+            _dbContext.practiceCompletes.Attach(pracom);
+            _dbContext.Entry(pracom).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+        }
+        public PracticeComplete getbyid(object id)
+        {
+            return _dbContext.practiceCompletes.Find(id);
+        }
+        public List<PracticeComplete> Listall(object id)
+        {
+            return _dbContext.practiceCompletes.Where(x => x.PracticeID.Equals((int)id)).ToList();
+        }
+        public int Count(object id)
+        {
+            return _dbContext.questionCompletes.Where(x => x.QuestionID.Equals((int)id) & x.IsCorrect.Equals(true)).Count();
         }
     }
     #endregion

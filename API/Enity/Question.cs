@@ -3,20 +3,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Enity
 {
-    public class Test
+    public class Question
     {
         [Key]
-        public int TestID { get; set; }
-        public string? Question { get; set; }
+        public int QuestionID { get; set; }
+        public string? QuestionContext { get; set; }
         public string? Answer1 { get; set; }
         public string? Answer2 { get; set; }
         public string? Answer3 { get; set; }
         public string? Answer4 { get; set; }
         public string? CorrectAnswer { get; set; }
-        public string? CorrectDescription { get; set; }
-        public int PracticeID {get; set;}
-        [ForeignKey(nameof(PracticeID))]
-        public virtual Practice? practice { get; set; }
+        public int SentenceID {get; set;}
+        [ForeignKey(nameof(SentenceID))]
+        public virtual Sentence? sentences { get; set; }
 
     }
 }

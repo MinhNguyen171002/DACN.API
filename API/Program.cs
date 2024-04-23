@@ -38,14 +38,15 @@ builder.Services.AddScoped<HttpClient>();
 
 builder.Services.AddScoped<IUserRepositories, UserRepository>();
 builder.Services.AddScoped<IExamRepositories, ExamRepository>();
-builder.Services.AddScoped<ITestRepositories, TestRepository>();
+builder.Services.AddScoped<IQuestionRepositories, QuestionRepository>();
 builder.Services.AddScoped<IResultRepositories, ResultRepository>();
+builder.Services.AddScoped<IPracticeRepositories, PracticeRepository>();
 
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<ExamService>();
-builder.Services.AddScoped<TestService>();
-builder.Services.AddScoped<ResultService>();
-
+builder.Services.AddTransient<UserService>();
+builder.Services.AddTransient<ExamService>();
+builder.Services.AddTransient<QuestionService>();
+builder.Services.AddTransient<ResultService>();
+builder.Services.AddTransient<PracticeService>();
 
 builder.Services.AddAuthentication(options =>
 {
