@@ -22,7 +22,7 @@ namespace API.DBContext
         {
             base.OnModelCreating(builder);
 
-            /*const string ADMIN_ID = "a18be9c0-aa65-4af8-bd17-00bd9344e575";
+            const string ADMIN_ID = "a18be9c0-aa65-4af8-bd17-00bd9344e575";
             const string ROLE_ID = "ad376a8f-9eab-4bb9-9fca-30b01540f445";
 
             builder.Entity<IdentityRole>().HasData(new IdentityRole
@@ -49,7 +49,7 @@ namespace API.DBContext
             {
                 RoleId = ROLE_ID,
                 UserId = ADMIN_ID
-            });*/
+            });
 
         }
     }
