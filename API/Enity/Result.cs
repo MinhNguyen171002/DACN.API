@@ -8,12 +8,10 @@ namespace API.Enity
     {
         [Key]
         public int ResultID { get; set; }
-        public int Score { get; set; }
-        public string UserID { get; set; }
-        public int PracticeID { get; set; }
-        [ForeignKey(nameof(UserID))]
+        public int? Score { get; set; }
+        public string? User { get; set; }
+        public int? Sentence { get; set; }
         public virtual User? user {get; set;}
-        [ForeignKey(nameof(PracticeID))]
-        public virtual Practice? practice {get; set;}
+        public virtual SentenceComplete? sentenceCom {get; set;}
     }
 }

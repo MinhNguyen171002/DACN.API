@@ -4,6 +4,7 @@ using API.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(DB))]
-    partial class DBModelSnapshot : ModelSnapshot
+    [Migration("20240425101721_01")]
+    partial class _01
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,9 +94,6 @@ namespace API.Migrations
                     b.Property<string>("CorrectAnswer")
                         .HasColumnType("longtext");
 
-                    b.Property<string>("CorrectDescription")
-                        .HasColumnType("longtext");
-
                     b.Property<string>("QuestionContext")
                         .HasColumnType("longtext");
 
@@ -115,6 +115,9 @@ namespace API.Migrations
                     b.Property<int>("QuestionID")
                         .HasColumnType("int");
 
+                    b.Property<string>("CorrectDescription")
+                        .HasColumnType("longtext");
+
                     b.Property<bool?>("IsCorrect")
                         .HasColumnType("tinyint(1)");
 
@@ -122,9 +125,6 @@ namespace API.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<int?>("SenComSentenceID")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Sentence")
                         .HasColumnType("int");
 
                     b.HasKey("QuestionID");
@@ -191,8 +191,8 @@ namespace API.Migrations
                     b.Property<int>("SentenceID")
                         .HasColumnType("int");
 
-                    b.Property<double?>("Result")
-                        .HasColumnType("double");
+                    b.Property<int?>("Result")
+                        .HasColumnType("int");
 
                     b.Property<bool?>("Status")
                         .HasColumnType("tinyint(1)");
@@ -360,13 +360,13 @@ namespace API.Migrations
                         {
                             Id = "a18be9c0-aa65-4af8-bd17-00bd9344e575",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "a42609ac-4177-4a05-902b-6357b58d6f1b",
+                            ConcurrencyStamp = "e038a6fa-3a6c-452c-b1f6-0d09f142078e",
                             Email = "admin@gmail.com",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
                             NormalizedEmail = "admin@gmail.com",
                             NormalizedUserName = "admin",
-                            PasswordHash = "AQAAAAIAAYagAAAAEKhqlNhC/CzKz+ufRMIyB9aPjqA/fvx0R48S9GrpirzhvDz8NtoD041CCgtKUc5wKQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEKGCxL/FAFC05Y15NbVJ0ULUN5zupWeua1W4WasxY0h4zHoEbX09UoYRop2retIvKQ==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             TwoFactorEnabled = false,

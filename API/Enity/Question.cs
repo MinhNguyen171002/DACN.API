@@ -13,8 +13,9 @@ namespace API.Enity
         public string? Answer3 { get; set; }
         public string? Answer4 { get; set; }
         public string? CorrectAnswer { get; set; }
-        public int SentenceID {get; set;}
-        [ForeignKey(nameof(SentenceID))]
+        public string? CorrectDescription { get; set; }
+        public int? Sentences { get; set; }
+        public virtual QuestionComplete quescom { get; set; }
         public virtual Sentence? sentences { get; set; }
 
     }

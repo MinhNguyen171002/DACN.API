@@ -1,19 +1,7 @@
 ﻿using API.DBContext;
-using API.Enity;
 using API.Model;
 using API.Services;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using Model;
-using MySqlConnector.Logging;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net.NetworkInformation;
-using System.Security.Claims;
-using System.Text;
 
 namespace API.Controllers.API
 {
@@ -26,14 +14,17 @@ namespace API.Controllers.API
         QuestionService questionService;
         ResultService resultService;
         PracticeService practiceService;
-        public AdminAPI(DB dBContext,ExamService examService, QuestionService questionService, ResultService resultService,
-            PracticeService practiceService)
+        SentenceService sentenceService;
+        public AdminAPI(DB dBContext,ExamService examService, 
+            QuestionService questionService, ResultService resultService,
+            PracticeService practiceService,SentenceService sentenceService)
         {
             this.dBContext = dBContext;
             this.examService = examService;
             this.questionService = questionService;
             this.resultService = resultService;
             this.practiceService = practiceService;
+            this.sentenceService = sentenceService;
         }
     
         #region "exam"
@@ -102,7 +93,7 @@ namespace API.Controllers.API
             return Ok(status);
         }
         [HttpDelete]
-        [Route("updatequestion")]
+        [Route("delquestion")]
         public async Task<IActionResult> DelQuestion([FromBody] QuestionDTO ques)
         {
             var status = await questionService.delete(ques);
@@ -113,7 +104,7 @@ namespace API.Controllers.API
             return Ok(status);
         }
         [HttpGet]
-        [Route("listquestion")]
+        [Route("getquestions")]
         public IActionResult ListQuestion(int id)
         {
             return Ok(questionService.List(id));
@@ -186,5 +177,48 @@ namespace API.Controllers.API
             return Ok(practiceService.List(id));
         }
         #endregion
+
+        #region "sentence"
+        [HttpPost]
+        [Route("addsentence")]
+        public async Task<IActionResult> CreSentence([FromBody] SentenceDTO sen)
+        {
+            var status = await sentenceService.insert(sen);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpPut]
+        [Route("updatesentence")]
+        public async Task<IActionResult> UpQSentence([FromBody] SentenceDTO sen)
+        {
+            var status = await sentenceService.update(sen);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpDelete]
+        [Route("deletesentence")]
+        public async Task<IActionResult> DelSentence([FromBody] SentenceDTO sen)
+        {
+            var status = await sentenceService.delete(sen);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpGet]
+        [Route("getsentences")]
+        public IActionResult ListSentence(int id)
+        {
+            return Ok(sentenceService.List(id));
+        }
+        #endregion
+
     }
 }

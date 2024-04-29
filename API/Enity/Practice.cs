@@ -8,9 +8,8 @@ namespace API.Enity
         [Key]
         public int PracticeID { get; set; }
         public string? PracticeDescription { get;set; }
-        public int ExamID { get; set; }
-        [ForeignKey(nameof(ExamID))]
+        public int? Exam { get; set; }
         public virtual Exam? exam { get; set; }
-        public virtual ICollection<Sentence>? sentences { get; set; }
+        public ICollection<Sentence>? sentences { get; set; }
     }
 }

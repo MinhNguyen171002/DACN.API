@@ -1,4 +1,5 @@
 using API.DBContext;
+using API.Enity;
 using API.Repositories;
 using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -41,12 +42,19 @@ builder.Services.AddScoped<IExamRepositories, ExamRepository>();
 builder.Services.AddScoped<IQuestionRepositories, QuestionRepository>();
 builder.Services.AddScoped<IResultRepositories, ResultRepository>();
 builder.Services.AddScoped<IPracticeRepositories, PracticeRepository>();
+builder.Services.AddScoped<ISentenceRepositories, SentenceRepository>();
+builder.Services.AddScoped<IQuestionRepositories, QuestionRepository>();
+builder.Services.AddScoped<IQuestionCompleteRepositories, QuestionCompleteRepository>();
+builder.Services.AddScoped<ISentenceCompleteRepositories, SentenceCompleteRepository>();
 
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<ExamService>();
 builder.Services.AddTransient<QuestionService>();
 builder.Services.AddTransient<ResultService>();
 builder.Services.AddTransient<PracticeService>();
+builder.Services.AddTransient<SentenceService>();
+builder.Services.AddTransient<QuestionComServices>();
+builder.Services.AddTransient<SentenceCompServices>();
 
 builder.Services.AddAuthentication(options =>
 {

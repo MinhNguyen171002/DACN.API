@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(DB))]
-    [Migration("20240423150415_01")]
-    partial class _01
+    [Migration("20240429115247_04")]
+    partial class _04
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -55,7 +55,10 @@ namespace API.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("PracticeID"));
 
-                    b.Property<int>("ExamID")
+                    b.Property<int?>("Exam")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ExamID")
                         .HasColumnType("int");
 
                     b.Property<string>("PracticeDescription")
@@ -66,28 +69,6 @@ namespace API.Migrations
                     b.HasIndex("ExamID");
 
                     b.ToTable("practices");
-                });
-
-            modelBuilder.Entity("API.Enity.PracticeComplete", b =>
-                {
-                    b.Property<int>("PracticeID")
-                        .HasColumnType("int");
-
-                    b.Property<bool?>("Status")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<TimeSpan>("Totaltime")
-                        .HasColumnType("time(6)");
-
-                    b.Property<string>("UserID")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("PracticeID");
-
-                    b.HasIndex("UserID");
-
-                    b.ToTable("practiceCompletes");
                 });
 
             modelBuilder.Entity("API.Enity.Question", b =>
@@ -113,15 +94,21 @@ namespace API.Migrations
                     b.Property<string>("CorrectAnswer")
                         .HasColumnType("longtext");
 
+                    b.Property<string>("CorrectDescription")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("QuestionContext")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("SentenceID")
+                    b.Property<int?>("Sentences")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("sentencesSentenceId")
                         .HasColumnType("int");
 
                     b.HasKey("QuestionID");
 
-                    b.HasIndex("SentenceID");
+                    b.HasIndex("sentencesSentenceId");
 
                     b.ToTable("questions");
                 });
@@ -134,12 +121,18 @@ namespace API.Migrations
                     b.Property<bool?>("IsCorrect")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<int?>("PracticeCompletePracticeID")
+                    b.Property<string>("QuestionChoose")
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("SenComSentenceID")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Sentence")
                         .HasColumnType("int");
 
                     b.HasKey("QuestionID");
 
-                    b.HasIndex("PracticeCompletePracticeID");
+                    b.HasIndex("SenComSentenceID");
 
                     b.ToTable("questionCompletes");
                 });
@@ -152,21 +145,22 @@ namespace API.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ResultID"));
 
-                    b.Property<int>("PracticeID")
+                    b.Property<int?>("Score")
                         .HasColumnType("int");
 
-                    b.Property<int>("Score")
+                    b.Property<int?>("Sentence")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserID")
-                        .IsRequired()
+                    b.Property<string>("User")
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("ResultID");
 
-                    b.HasIndex("PracticeID");
+                    b.HasIndex("Sentence")
+                        .IsUnique();
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("User")
+                        .IsUnique();
 
                     b.ToTable("results");
                 });
@@ -182,7 +176,10 @@ namespace API.Migrations
                     b.Property<string>("FilePath")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("PracticeID")
+                    b.Property<int?>("Practice")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PracticeID")
                         .HasColumnType("int");
 
                     b.HasKey("SentenceId");
@@ -190,6 +187,31 @@ namespace API.Migrations
                     b.HasIndex("PracticeID");
 
                     b.ToTable("sentences");
+                });
+
+            modelBuilder.Entity("API.Enity.SentenceComplete", b =>
+                {
+                    b.Property<int>("SentenceID")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("Result")
+                        .HasColumnType("double");
+
+                    b.Property<bool?>("Status")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<TimeSpan>("Totaltime")
+                        .HasColumnType("time(6)");
+
+                    b.Property<string>("User")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("SentenceID");
+
+                    b.HasIndex("User")
+                        .IsUnique();
+
+                    b.ToTable("sentenceCompletes");
                 });
 
             modelBuilder.Entity("API.Enity.User", b =>
@@ -341,13 +363,13 @@ namespace API.Migrations
                         {
                             Id = "a18be9c0-aa65-4af8-bd17-00bd9344e575",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "cfd99109-3757-4013-9613-1b655877f03d",
+                            ConcurrencyStamp = "a42609ac-4177-4a05-902b-6357b58d6f1b",
                             Email = "admin@gmail.com",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
                             NormalizedEmail = "admin@gmail.com",
                             NormalizedUserName = "admin",
-                            PasswordHash = "AQAAAAIAAYagAAAAEC3ogyy4VZGP12AClaWTHLbEnvHfdrG4em6KP7FdHWk7/FlowI4uK02ExopMww4G1g==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEKhqlNhC/CzKz+ufRMIyB9aPjqA/fvx0R48S9GrpirzhvDz8NtoD041CCgtKUc5wKQ==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             TwoFactorEnabled = false,
@@ -448,85 +470,79 @@ namespace API.Migrations
                     b.HasOne("API.Enity.Exam", "exam")
                         .WithMany("practices")
                         .HasForeignKey("ExamID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("exam");
-                });
-
-            modelBuilder.Entity("API.Enity.PracticeComplete", b =>
-                {
-                    b.HasOne("API.Enity.Practice", "Practice")
-                        .WithMany()
-                        .HasForeignKey("PracticeID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("API.Enity.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Practice");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("API.Enity.Question", b =>
                 {
                     b.HasOne("API.Enity.Sentence", "sentences")
                         .WithMany("questions")
-                        .HasForeignKey("SentenceID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("sentencesSentenceId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("sentences");
                 });
 
             modelBuilder.Entity("API.Enity.QuestionComplete", b =>
                 {
-                    b.HasOne("API.Enity.PracticeComplete", null)
-                        .WithMany("QuestionCompletes")
-                        .HasForeignKey("PracticeCompletePracticeID");
-
                     b.HasOne("API.Enity.Question", "test")
-                        .WithMany()
-                        .HasForeignKey("QuestionID")
+                        .WithOne("quescom")
+                        .HasForeignKey("API.Enity.QuestionComplete", "QuestionID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("API.Enity.SentenceComplete", "SenCom")
+                        .WithMany("QuestionCompletes")
+                        .HasForeignKey("SenComSentenceID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("SenCom");
 
                     b.Navigation("test");
                 });
 
             modelBuilder.Entity("API.Enity.Result", b =>
                 {
-                    b.HasOne("API.Enity.Practice", "practice")
-                        .WithMany()
-                        .HasForeignKey("PracticeID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("API.Enity.SentenceComplete", "sentenceCom")
+                        .WithOne("result")
+                        .HasForeignKey("API.Enity.Result", "Sentence");
 
                     b.HasOne("API.Enity.User", "user")
-                        .WithMany()
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithOne("result")
+                        .HasForeignKey("API.Enity.Result", "User");
 
-                    b.Navigation("practice");
+                    b.Navigation("sentenceCom");
 
                     b.Navigation("user");
                 });
 
             modelBuilder.Entity("API.Enity.Sentence", b =>
                 {
-                    b.HasOne("API.Enity.Practice", "Practice")
+                    b.HasOne("API.Enity.Practice", "practice")
                         .WithMany("sentences")
                         .HasForeignKey("PracticeID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("practice");
+                });
+
+            modelBuilder.Entity("API.Enity.SentenceComplete", b =>
+                {
+                    b.HasOne("API.Enity.Sentence", "Sentence")
+                        .WithOne("sencom")
+                        .HasForeignKey("API.Enity.SentenceComplete", "SentenceID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Practice");
+                    b.HasOne("API.Enity.User", "user")
+                        .WithOne("sencom")
+                        .HasForeignKey("API.Enity.SentenceComplete", "User");
+
+                    b.Navigation("Sentence");
+
+                    b.Navigation("user");
                 });
 
             modelBuilder.Entity("API.Enity.User", b =>
@@ -601,14 +617,34 @@ namespace API.Migrations
                     b.Navigation("sentences");
                 });
 
-            modelBuilder.Entity("API.Enity.PracticeComplete", b =>
+            modelBuilder.Entity("API.Enity.Question", b =>
                 {
-                    b.Navigation("QuestionCompletes");
+                    b.Navigation("quescom")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("API.Enity.Sentence", b =>
                 {
                     b.Navigation("questions");
+
+                    b.Navigation("sencom")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("API.Enity.SentenceComplete", b =>
+                {
+                    b.Navigation("QuestionCompletes");
+
+                    b.Navigation("result");
+                });
+
+            modelBuilder.Entity("API.Enity.User", b =>
+                {
+                    b.Navigation("result")
+                        .IsRequired();
+
+                    b.Navigation("sencom")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

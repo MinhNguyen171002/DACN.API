@@ -8,9 +8,9 @@ namespace API.Enity
         [Key]
         public int SentenceId { get; set; }
         public string? FilePath { get; set; }
-        public int PracticeID { get; set; }
-        [ForeignKey(nameof(PracticeID))]
-        public virtual Practice? Practice { get; set; }
+        public int? Practice { get; set; }            
+        public virtual Practice? practice { get; set; }
+        public virtual SentenceComplete sencom { get; set; }
         public virtual ICollection<Question>? questions { get; set; }
     }
 }

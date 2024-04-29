@@ -7,9 +7,11 @@ namespace API.Enity
     {
         [Key]
         public int QuestionID { get; set; }
+        public string? QuestionChoose { get; set; }
         public bool? IsCorrect { get; set; }
-        [ForeignKey(nameof(QuestionID))]
+        public int? Sentence { get; set; }
         public virtual Question? test { get; set; }
+        public virtual SentenceComplete? SenCom { get; set; }
 
     }
 }

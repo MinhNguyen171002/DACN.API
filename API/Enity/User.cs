@@ -13,6 +13,8 @@ namespace API.Enity
         public string Email {  get; set; }
         [ForeignKey(nameof(UserID))]
         public IdentityUser user { get; set; }
+        public SentenceComplete sencom {  get; set; }
+        public Result result { get; set; }
 
     }
 }

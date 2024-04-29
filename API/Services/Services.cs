@@ -5,8 +5,10 @@ using API.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Model;
 using System.DirectoryServices.Protocols;
+using System.Xml.Linq;
 
 namespace API.Services
 {
@@ -132,9 +134,13 @@ namespace API.Services
             var exams = examRepositories.Listall(skill);
             foreach (var exam in exams)
             {
-                examDTOs.Add(new ExamDTO { ExamID = exam.ExamID, ExamDescription = exam.ExamDescription, Skill = exam.Skill, PracticeCount = examRepositories.Count(exam.ExamID) });
+                examDTOs.Add(new ExamDTO { ExamID = exam.ExamID,
+                    ExamDuration = exam.ExamDuration,
+                    ExamDescription = exam.ExamDescription,
+                    Skill = exam.Skill,
+                    PracticeCount = examRepositories.Count(exam.ExamID) });
             }
-            return examDTOs;            
+            return examDTOs;
         }
     }
     #endregion
@@ -173,8 +179,8 @@ namespace API.Services
                         Answer3 = ques.Answer3,
                         Answer4 = ques.Answer4,
                         CorrectAnswer = ques.CorrectAnswer,
-                        SentenceID = ques.SentenceID,
-                };
+                        Sentences = ques.SentenceID,
+                    };
                     questionRepositories.insertQuestion(question);
                     Save();
                     return new Response { Status = true, Message = "Success" };
@@ -198,7 +204,8 @@ namespace API.Services
                     question.Answer4 = ques.Answer4;
                     question.QuestionContext = ques.QuestionContext;
                     question.CorrectAnswer = ques.CorrectAnswer;
-                    question.SentenceID = ques.SentenceID;
+                    question.Sentences = ques.SentenceID;
+                    question.CorrectDescription = ques.CorrectDescription;
                     questionRepositories.updateQuestion(question);
                     Save();
                     return new Response { Status = true, Message = "Success" };
@@ -228,9 +235,25 @@ namespace API.Services
         {
             return questionRepositories.getbyid(id);
         }
-        public List<Question> List(int id)
+        public List<QuestionDTO> List(int id)
         {
-            return questionRepositories.Listall(id);
+            List<QuestionDTO> questionDTOs = new List<QuestionDTO>();
+            var questions = questionRepositories.Listall(id);
+            foreach (var question in questions)
+            {
+                questionDTOs.Add(new QuestionDTO
+                {
+                    QuestionID = question.QuestionID,
+                    QuestionContext = question.QuestionContext,
+                    Answer1 = question.Answer1,
+                    Answer2 = question.Answer2,
+                    Answer3 = question.Answer3,
+                    Answer4 = question.Answer4,
+                    CorrectAnswer = question.CorrectAnswer,
+                    SentenceID =  question.Sentences
+                });
+            }
+            return questionDTOs;
         }
     }
     #endregion
@@ -262,10 +285,10 @@ namespace API.Services
                 {
                     Result result1 = new Result()
                     {
-                        ResultID = re.ResultID,
+/*                        ResultID = re.ResultID,
                         PracticeID = re.PracticeID,
                         Score = re.Score,
-                        UserID = user.Id,
+                        UserID = user.Id,*/
                     };
                     resultRepositories.insertResult(result1);
                     Save();
@@ -347,7 +370,7 @@ namespace API.Services
                     {
                         PracticeID = pra.PracticeID,
                         PracticeDescription = pra.PracticeDescription,
-                        ExamID = pra.PracticeID,
+                        Exam = pra.ExamID,
                     };
                     practiceRepositories.insertPractice(practice1);
                     Save();
@@ -367,7 +390,7 @@ namespace API.Services
                 if (practice != null)
                 {
                     practice.PracticeDescription = pra.PracticeDescription;
-                    practice.ExamID = pra.ExamID;
+                    practice.Exam = pra.ExamID;
                     practiceRepositories.updatePractice(practice);
                     Save();
                     return new Response { Status = true, Message = "Success" };
@@ -396,33 +419,290 @@ namespace API.Services
         public Practice GetbyId(int id)
         {
             return practiceRepositories.getbyid(id);
-        }
+        }        
         public List<PracticeDTO> List(int id)
         {
             List<PracticeDTO> practiceDTOs = new List<PracticeDTO>();
             var practices = practiceRepositories.Listall(id);
             foreach (var practice in practices)
             {
-                practiceDTOs.Add(new PracticeDTO { PracticeID = practice.PracticeID,PracticeDescription = practice.PracticeDescription, ExamID = practice.ExamID, TestCount = practiceRepositories.Count(practice.PracticeID) });
+                practiceDTOs.Add(new PracticeDTO
+                {
+                    PracticeID = practice.PracticeID,
+                    PracticeDescription = practice.PracticeDescription,
+                    TestCount = practiceRepositories.Count(practice.PracticeID),
+                    /*CorrectPercent = practiceRepositories.CorrectPercent(practice.PracticeID, userId)*/
+                });
             }
             return practiceDTOs;
         }
     }
     #endregion
 
-    #region "practiceComplete"
-    public class PracticeComplete
+    #region "sentenceComplete"
+    public class SentenceCompServices
     {
         private DB dBContext;
         private readonly UserManager<IdentityUser> _userManager;
-        private IPractceCompleteRepositories pracomRepositories;
+        private ISentenceCompleteRepositories sencomRepositories;
 
-        public PracticeComplete(DB dBContext, UserManager<IdentityUser> userManager)
+        public SentenceCompServices(DB dBContext, UserManager<IdentityUser> userManager)
         {
             this.dBContext = dBContext;
-            this.pracomRepositories = new PractceCompleteRepository(dBContext);
+            this.sencomRepositories = new SentenceCompleteRepository(dBContext);
             this._userManager = userManager;
         }
+        public void Save()
+        {
+            dBContext.SaveChanges();
+        }
+        public async Task<Response> insert(SentenceComDTO sencom)
+        {
+            var user = await _userManager.FindByNameAsync(sencom.User);
+            SentenceComplete sen = sencomRepositories.getbyid(sencom.SentenceID);
+            if (sen == null)
+            {
+                SentenceComplete sen1 = new SentenceComplete()
+                {
+                    SentenceID = sencom.SentenceID,
+                    Result = sencom.Result,
+                    Totaltime = sencom.Totaltime,
+                    Status = sencom.Status,
+                    User = user.Id,
+                };
+                sencomRepositories.insertSenComplete(sen1);
+                Save();
+                return new Response { Status = true, Message = "Success" };
+            }
+            return new Response { Status = false, Message = "Sentence already done" };
+        }
+        public async Task<Response> update(SentenceComDTO sencom)
+        {
+            SentenceComplete sen = sencomRepositories.getbyid(sencom.SentenceID);
+            if (sen != null)
+            {
+                sen.SentenceID = sencom.SentenceID;
+                sen.Result = sencom.Result;
+                sen.Totaltime = sencom.Totaltime;
+                sen.Status = sencom.Status;
+                sen.User = sencom.User;
+                sencomRepositories.updateSenComplete(sen);
+                Save();
+                return new Response { Status = true, Message = "Success" };
+            }
+            return new Response { Status = false, Message = "Sentence not found!!!" };
+        }
+        public async Task<Response> delete(SentenceComDTO sencom)
+        {
+            SentenceComplete sen = sencomRepositories.getbyid(sencom.SentenceID);
+            if (sen != null)
+            {
+                sencomRepositories.deleteSenComplete(sen);
+                Save();
+                return new Response { Status = true, Message = "Success" };
+            }
+            return new Response { Status = false, Message = "Sentence not found!!!" };
+        }
+
+        /*public List<SentenceComDTO> List(int id)
+        {
+            List<SentenceComDTO> quescomDTOs = new List<QuestionCompleteDTO>();
+            var sentences = sencomRepositories.
+            foreach (var question in questions)
+            {
+                quescomDTOs.Add(new QuestionCompleteDTO
+                {
+                    QuestionID = question.QuestionID,
+                    QuestionChoose = question.QuestionChoose,
+                    IsCorrect = question.IsCorrect,
+                    CorrectDescription = quescomRepositories.findcorrcet(question.QuestionID),
+                });
+            }
+            return quescomDTOs;
+        }*/
+    }
+    #endregion
+
+    #region "sentence"
+    public class SentenceService
+    {
+        private DB dBContext;
+        private readonly UserManager<IdentityUser> _userManager;
+        private ISentenceRepositories senRepositories;
+
+        public SentenceService(DB dBContext, UserManager<IdentityUser> userManager)
+        {
+            this.dBContext = dBContext;
+            this.senRepositories = new SentenceRepository(dBContext);
+            this._userManager = userManager;
+        }
+        public void Save()
+        {
+            dBContext.SaveChanges();
+        }
+        public async Task<Response> insert(SentenceDTO sen)
+        {
+            var user = await _userManager.FindByNameAsync(sen.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                Sentence sentence = senRepositories.getbyid(sen.SentenceId);
+                if (sentence == null)
+                {
+                    Sentence sentence1 = new Sentence()
+                    {
+                        SentenceId = sen.SentenceId,
+                        FilePath = sen.FilePath,
+                        Practice = sen.PracticeId
+                    };
+                    senRepositories.insertSentence(sentence1);
+                    Save();
+                    return new Response { Status = true, Message = "Success" };
+                }
+                return new Response { Status = false, Message = "Sentence already exist" };
+            }
+            return new Response { Status = false, Message = "Need authencation" };
+        }
+        public async Task<Response> update(SentenceDTO sen)
+        {
+            var user = await _userManager.FindByNameAsync(sen.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                Sentence sentence = GetbyId(sen.SentenceId);
+                if (sentence != null)
+                {
+                    sentence.FilePath = sen.FilePath;
+                    sentence.Practice = sen.PracticeId;
+                    senRepositories.updateSentence(sentence);
+                    Save();
+                    return new Response { Status = true, Message = "Success" };
+                }
+                return new Response { Status = false, Message = "Sentence not found!!!" };
+            }
+            return new Response { Status = false, Message = "Need authencation" };
+        }
+        public async Task<Response> delete(SentenceDTO sen)
+        {
+            var user = await _userManager.FindByNameAsync(sen.Username);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var sentence = GetbyId(sen.SentenceId);
+                if (sentence != null)
+                {
+                    senRepositories.deleteSentence(sentence);
+                    Save();
+                    return new Response { Status = true, Message = "Success" };
+                }
+                return new Response { Status = false, Message = "Practice not found!!!" };
+            }
+            return new Response { Status = false, Message = "Need authencation" };
+        }
+        public Sentence GetbyId(int id)
+        {
+            return senRepositories.getbyid(id);
+        }
+        public List<SentenceDTO> List(int id)
+        {
+            List<SentenceDTO> sentenceDTOs = new List<SentenceDTO>();
+            var sentences = senRepositories.Listall(id);
+            foreach (var sentence in sentences)
+            {
+                sentenceDTOs.Add(new SentenceDTO
+                {
+                    SentenceId = sentence.SentenceId,
+                    FilePath = sentence.FilePath,
+                    PracticeId = sentence.Practice,
+                });
+            }
+            return sentenceDTOs;
+        }
+    }
+    #endregion
+
+    #region "questionComplete"
+    public class QuestionComServices
+    {
+        private DB dBContext;
+        private readonly UserManager<IdentityUser> _userManager;
+        private IQuestionCompleteRepositories quescomRepositories;
+
+        public QuestionComServices(DB dBContext, UserManager<IdentityUser> userManager)
+        {
+            this.dBContext = dBContext;
+            this.quescomRepositories = new QuestionCompleteRepository(dBContext);
+            this._userManager = userManager;
+        }
+        public void Save()
+        {
+            dBContext.SaveChanges();
+        }
+        public async Task<Response> insert(QuestionCompleteDTO ques)
+        {
+            QuestionComplete quescom = quescomRepositories.getbyid(ques.QuestionID);
+            if (quescom == null)
+            {
+                QuestionComplete quescom1 = new QuestionComplete()
+                {
+                    QuestionID = ques.QuestionID,
+                    QuestionChoose = ques.QuestionChoose,
+                    IsCorrect = ques.IsCorrect,
+                    Sentence = ques.Sentence,
+                };
+                quescomRepositories.insertQuesComplete(quescom1);
+                Save();
+                return new Response { Status = true, Message = "Success" };
+            }
+            return new Response { Status = false, Message = "Question already done" };
+        }
+        public async Task<Response> update(QuestionCompleteDTO ques)
+        {
+            QuestionComplete question = quescomRepositories.getbyid(ques.QuestionID);
+            if (question != null)
+            {
+                question.QuestionChoose = ques.QuestionChoose;
+                question.IsCorrect = ques.IsCorrect;
+                quescomRepositories.updateQuesComplete(question);
+                Save();
+                return new Response { Status = true, Message = "Success" };
+            }
+            return new Response { Status = false, Message = "Question not found!!!" };
+        }
+        public async Task<Response> delete(QuestionCompleteDTO ques)
+        {
+            QuestionComplete question = quescomRepositories.getbyid(ques.QuestionID);
+            if (question != null)
+            {
+                quescomRepositories.deleteQuesComplete(question);
+                Save();
+                return new Response { Status = true, Message = "Success" };
+            }
+            return new Response { Status = false, Message = "Question not found!!!" };
+        }
+
+        public int Correct(int id)
+        {
+            return quescomRepositories.CountCorrect(id);
+        }
+
+        public List<QuestionCompleteDTO> List(int id)
+        {
+            List<QuestionCompleteDTO> quescomDTOs = new List<QuestionCompleteDTO>();
+            var questions = quescomRepositories.list(id);
+            foreach (var question in questions)
+            {
+                quescomDTOs.Add(new QuestionCompleteDTO
+                {
+                    QuestionID = question.QuestionID,
+                    QuestionChoose = question.QuestionChoose,
+                    IsCorrect = question.IsCorrect,
+                    CorrectDescription = quescomRepositories.findcorrcet(question.QuestionID),
+                });
+            }
+            return quescomDTOs;
+        }
+
     }
     #endregion
 }
