@@ -10,6 +10,6 @@ namespace API.Enity
         public string? ExamDescription { get; set;}
         public string? Skill { get; set; }
         public TimeSpan ExamDuration {  get; set;}
-        public virtual ICollection<Practice>? practices { get; set; }
+        public virtual ICollection<Sentence>? sentences { get; set; }
     }
 }

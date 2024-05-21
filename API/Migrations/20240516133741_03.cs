@@ -5,18 +5,14 @@
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class _02 : Migration
+    public partial class _03 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "CorrectDescription",
-                table: "questionCompletes");
-
             migrationBuilder.AddColumn<string>(
-                name: "CorrectDescription",
-                table: "questions",
+                name: "FileType",
+                table: "files",
                 type: "longtext",
                 nullable: true)
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -26,29 +22,22 @@ namespace API.Migrations
                 keyColumn: "Id",
                 keyValue: "a18be9c0-aa65-4af8-bd17-00bd9344e575",
                 columns: new[] { "ConcurrencyStamp", "PasswordHash" },
-                values: new object[] { "79d76083-92f3-4002-ad05-0f071f0c9eb8", "AQAAAAIAAYagAAAAEAY8pOD9kMSPzsX5xtHbO5VqcfpHJg+yfDmxWhCWdocpRBbOCV9Dq7pWTM36r5oPmw==" });
+                values: new object[] { "c3a88e15-0773-40b2-82b4-8ec650a47351", "AQAAAAIAAYagAAAAECHIkGQzr7Hvz0l5swgmFG0dmq3VdoCe9f1qUU0sSzAhBPgmcrRuagZb3UtUV0r9OQ==" });
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "CorrectDescription",
-                table: "questions");
-
-            migrationBuilder.AddColumn<string>(
-                name: "CorrectDescription",
-                table: "questionCompletes",
-                type: "longtext",
-                nullable: true)
-                .Annotation("MySql:CharSet", "utf8mb4");
+                name: "FileType",
+                table: "files");
 
             migrationBuilder.UpdateData(
                 table: "AspNetUsers",
                 keyColumn: "Id",
                 keyValue: "a18be9c0-aa65-4af8-bd17-00bd9344e575",
                 columns: new[] { "ConcurrencyStamp", "PasswordHash" },
-                values: new object[] { "e038a6fa-3a6c-452c-b1f6-0d09f142078e", "AQAAAAIAAYagAAAAEKGCxL/FAFC05Y15NbVJ0ULUN5zupWeua1W4WasxY0h4zHoEbX09UoYRop2retIvKQ==" });
+                values: new object[] { "d7fcc16f-c5a5-44e7-93e2-25baad996fd9", "AQAAAAIAAYagAAAAEABu9Pvjt0npuv0pyAy5VFs3zVvaMqXBOR233CtELb1LsAc5STdaCm2cKJJyqQ89Rw==" });
         }
     }
 }

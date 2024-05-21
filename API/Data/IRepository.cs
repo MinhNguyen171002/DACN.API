@@ -10,6 +10,9 @@ namespace API.Data
     public interface IRepository<T> where T : class
     {
         void Add(T entity);
+        void AddRange (IEnumerable<T> entities);
+
+        void DeleteRange(IEnumerable<T> entities);
         void Update(T entity);
         void Delete(T entity);
         void Delete(Expression<Func<T, bool>> where);

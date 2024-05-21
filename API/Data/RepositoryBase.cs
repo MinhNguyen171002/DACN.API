@@ -25,6 +25,11 @@ namespace API.Data
             dbset.Add(entity);
         }
 
+        public virtual void AddRange(IEnumerable<T> entities)
+        {
+            dbset.AddRangeAsync(entities);
+        }
+
         public virtual void Update(T entity)
         {
             dbset.Attach(entity);
@@ -36,6 +41,10 @@ namespace API.Data
             dbset.Remove(entity);
         }
 
+        public virtual void DeleteRange(IEnumerable<T> entities)
+        {
+            dbset.RemoveRange(entities);
+        }
         public virtual void Delete(Expression<Func<T, bool>> where)
         {
             IEnumerable<T> objects = dbset.Where<T>(where).AsEnumerable();

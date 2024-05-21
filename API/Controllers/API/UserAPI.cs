@@ -1,6 +1,7 @@
 ﻿using API.DBContext;
 using API.Enity;
 using API.Model;
+using API.Model.DTO;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -46,7 +47,7 @@ namespace API.Controllers.API
         #region "questioncomplete"
         [HttpPost]
         [Route("addquescom")]
-        public async Task<IActionResult> CreQuesCom([FromBody] QuestionCompleteDTO ques)
+        public async Task<IActionResult> CreQuesCom([FromBody] QuestionComDTO ques)
         {
             var status = await questionComServices.insert(ques);
             if (status.Status.Equals(false))
@@ -57,7 +58,7 @@ namespace API.Controllers.API
         }
         [HttpPut]
         [Route("updatequescom")]
-        public async Task<IActionResult> UpQuesCom([FromBody] QuestionCompleteDTO ques)
+        public async Task<IActionResult> UpQuesCom([FromBody] QuestionComDTO ques)
         {
             var status = await questionComServices.update(ques);
             if (status.Status.Equals(false))
@@ -67,10 +68,10 @@ namespace API.Controllers.API
             return Ok(status);
         }
         [HttpDelete]
-        [Route("deletequescom")]
-        public async Task<IActionResult> DelQuesCom([FromBody] QuestionCompleteDTO ques)
+        [Route("deletequescoms")]
+        public async Task<IActionResult> DelQuesComs([FromBody] QuestionComDTO ques)
         {
-            var status = await questionComServices.delete(ques);
+            var status = await questionComServices.deletes(ques);
             if (status.Status.Equals(false))
             {
                 return Ok(status);
@@ -79,15 +80,9 @@ namespace API.Controllers.API
         }
         [HttpGet]
         [Route("getquescom")]
-        public IActionResult ListQuesCom(int id)
+        public IActionResult ListQuesCom(string id,string name)
         {
-            return Ok(questionComServices.List(id));
-        }
-        [HttpGet]
-        [Route("getcorrect")]
-        public IActionResult getCorrect(int id)
-        {
-            return Ok(questionComServices.Correct(id));
+            return Ok(questionComServices.List(id,name));
         }
         #endregion
 
@@ -103,27 +98,22 @@ namespace API.Controllers.API
             }
             return Ok(status);
         }
-        [HttpPut]
-        [Route("updatesencom")]
-        public async Task<IActionResult> UpSenCom([FromBody] SentenceComDTO sen)
-        {
-            var status = await sentenceCompService.update(sen);
-            if (status.Status.Equals(false))
-            {
-                return Ok(status);
-            }
-            return Ok(status);
-        }
         [HttpDelete]
         [Route("deletesencom")]
         public async Task<IActionResult> DelSenCom([FromBody] SentenceComDTO sen)
         {
             var status = await sentenceCompService.delete(sen);
-            if (status.Status.Equals(false))
+            if(status.Status.Equals(false))
             {
                 return Ok(status);
             }
             return Ok(status);
+        }       
+        [HttpGet]
+        [Route("getsencom")]
+        public async Task<IActionResult> GetSenCom (string id,string name)
+        {
+            return Ok(await sentenceCompService.getSenCom(id, name));
         }
         #endregion
     }

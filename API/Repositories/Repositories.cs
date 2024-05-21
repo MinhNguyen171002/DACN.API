@@ -2,6 +2,8 @@
 using API.DBContext;
 using API.Enity;
 using API.Model;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace API.Repositories
@@ -9,9 +11,6 @@ namespace API.Repositories
     #region "user"
     public interface IUserRepositories : IRepository<User>
     {
-        public void insertUser(User user);
-        public void updateUser(User user);
-        public void deleteUser(User user);
 
     }
     public class UserRepository : RepositoryBase<User>, IUserRepositories
@@ -20,31 +19,13 @@ namespace API.Repositories
         {
 
         }
-        public void insertUser(User user)
-        {
-            _dbContext.users.Add(user);
-        }
-        public void deleteUser(User user)
-        {
-            _dbContext.users.Remove(user);
-        }
-
-        public void updateUser(User user)
-        {
-            _dbContext.users.Attach(user);
-            _dbContext.Entry(user).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-        }
     }
     #endregion
 
     #region "exam"
     public interface IExamRepositories : IRepository<Exam>
     {
-        public void insertExam(Exam exam);
-        public void deleteExam(Exam exam);
-        public void updateExam(Exam exam);
-        public Exam getbyid(object id);
-        public List<Exam> Listall(object id);
+        public List<Exam> Listall(object skill);
         public int Count(object id);
     }
     public class ExamRepository : RepositoryBase<Exam>, IExamRepositories
@@ -52,30 +33,13 @@ namespace API.Repositories
         public ExamRepository(DB dbContext) : base(dbContext)
         {
         }
-        public void insertExam(Exam exam)
-        {
-            _dbContext.exams.Add(exam);
-        }
-        public void deleteExam(Exam exam)
-        {
-            _dbContext.exams.Remove(exam);
-        }
-        public void updateExam(Exam exam)
-        {
-            _dbContext.exams.Attach(exam);
-            _dbContext.Entry(exam).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-        }
-        public Exam getbyid(object id)
-        {
-            return _dbContext.exams.Find(id);
-        }
         public List<Exam> Listall(object skill)
         {
             return _dbContext.exams.Where(x => x.Skill == (string)skill).ToList();
         }
         public int Count(object id)
         {
-            return _dbContext.practices.Where(x => x.Exam.Equals((int)id)).Count();
+            return _dbContext.sentences.Where(x => x.Exam.Equals((int)id)).Count();
         }
     }
     #endregion
@@ -83,132 +47,21 @@ namespace API.Repositories
     #region "question"
     public interface IQuestionRepositories : IRepository<Question>
     {
-        public void insertQuestion(Question test);
-        public void deleteQuestion(Question test);
-        public void updateQuestion(Question test);
         public Question getbyid(object id);
-        public List<Question> Listall(object id);
+        public List<Question> listall(object id);
     }
     public class QuestionRepository : RepositoryBase<Question>, IQuestionRepositories
     {
         public QuestionRepository(DB dbContext) : base(dbContext)
         {
         }
-        public void insertQuestion(Question test)
-        {
-            _dbContext.questions.Add(test);
-        }
-        public void deleteQuestion(Question test)
-        {
-            _dbContext.questions.Remove(test);
-        }
-        public void updateQuestion(Question test)
-        {
-            _dbContext.questions.Attach(test);
-            _dbContext.Entry(test).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-        }
         public Question getbyid(object id)
         {
             return _dbContext.questions.Find(id);
         }
-        public List<Question> Listall(object id)
+        public List<Question> listall(object id)
         {
-            return _dbContext.questions.Where(x => x.Sentences.Equals((int)id)).ToList();
-        }
-    }
-    #endregion
-
-    #region "result"
-    public interface IResultRepositories : IRepository<Result>
-    {
-        public void insertResult(Result result);
-        public void deleteResult(Result result);
-        public void updateResult(Result result);
-        public Result getbyid(object id);
-    }
-    public class ResultRepository : RepositoryBase<Result>, IResultRepositories
-    {
-        public ResultRepository(DB dbContext) : base(dbContext)
-        {
-
-        }
-        public void insertResult(Result result)
-        {
-            _dbContext.results.Add(result);
-        }
-        public void deleteResult(Result result)
-        {
-            _dbContext.results.Remove(result);
-        }
-        public void updateResult(Result result)
-        {
-            _dbContext.results.Attach(result);
-            _dbContext.Entry(result).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-        }
-        public Result getbyid(object id)
-        {
-            return _dbContext.results.Find(id);
-        }
-    }
-    #endregion
-
-    #region "practice"
-
-    public interface IPracticeRepositories : IRepository<Practice>
-    {
-        public void insertPractice(Practice practice);
-        public void deletePractice(Practice practice);
-        public void updatePractice(Practice practice);
-        public Practice getbyid(object id);
-        public List<Practice> Listall(object id);
-        public int Count(object id);
-        public decimal CorrectPercent(object id, object user);
-        public string GetId(object user);
-    }
-    public class PracticeRepository : RepositoryBase<Practice>, IPracticeRepositories
-    {
-        public PracticeRepository(DB dbContext) : base(dbContext)
-        {
-
-        }
-        public void insertPractice(Practice practice)
-        {
-            _dbContext.practices.Add(practice);
-        }
-        public void deletePractice(Practice practice)
-        {
-            _dbContext.practices.Remove(practice);
-        }
-        public void updatePractice(Practice practice)
-        {
-            _dbContext.practices.Attach(practice);
-            _dbContext.Entry(practice).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-        }
-        public Practice getbyid(object id)
-        {
-            return _dbContext.practices.Find(id);
-        }
-        public List<Practice> Listall(object id)
-        {
-            return _dbContext.practices.Where(x => x.Exam.Equals((int)id)).ToList();
-        }
-
-        public string GetId (object user)
-        {
-            return _dbContext.users.Where(x => x.UserName.Equals((string)user)).Select(x => x.UserID).FirstOrDefault();
-        }
-
-        public int Count(object id)
-        {
-            var a = _dbContext.sentences.Where(x => x.Practice.Equals((int)id)).Count();
-            return a;
-        }
-        public decimal CorrectPercent(object id, object user)
-        {
-            Sentence sentence = _dbContext.sentences.Where(x => x.Practice.Equals((int)id)).FirstOrDefault();
-            int correct = _dbContext.sentenceCompletes.Where(x => x.Status.Equals(true) & x.User.Equals((string)user)
-            & x.SentenceID.Equals(sentence.SentenceId)).Count();
-            return correct / 100;
+            return _dbContext.questions.Where(x => x.Sentences.Equals(id)).ToList();
         }
     }
     #endregion
@@ -216,10 +69,9 @@ namespace API.Repositories
     #region "sentencecomplete"
     public interface ISentenceCompleteRepositories : IRepository<SentenceComplete>
     {
-        public void insertSenComplete(SentenceComplete sencom);
-        public void deleteSenComplete(SentenceComplete sencom);
-        public void updateSenComplete(SentenceComplete sencom);
-        public SentenceComplete getbyid(object id);
+        public SentenceComplete getbyuser(object id,object user);
+        public int? CorrectCount(object id, object user);
+        public decimal? CorrectPercent(object id, object count);
     }
     public class SentenceCompleteRepository : RepositoryBase<SentenceComplete>, ISentenceCompleteRepositories
     {
@@ -227,38 +79,35 @@ namespace API.Repositories
         {
 
         }
-        public void insertSenComplete(SentenceComplete sencom)
+        public SentenceComplete getbyuser(object id,object user)
         {
-            _dbContext.sentenceCompletes.Add(sencom);
+            return _dbContext.sentenceCompletes.Where(x => x.SentenceID.Equals((string)id)
+            && x.User.Equals((string)user)).FirstOrDefault();
         }
-        public void deleteSenComplete(SentenceComplete sencom)
+        public int? CorrectCount(object id, object user)
         {
-            _dbContext.sentenceCompletes.Remove(sencom);
+            return _dbContext.questionCompletes.Where(x=>x.Sentence.Equals((string)id)
+            &&x.User.Equals((string)user)
+            &&x.IsCorrect.Equals(true)).Count();                
         }
-        public void updateSenComplete(SentenceComplete sencom)
+        public decimal? CorrectPercent(object id,object count)
         {
-            _dbContext.sentenceCompletes.Attach(sencom);
-            _dbContext.Entry(sencom).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            var a = (decimal)(int)count / _dbContext.questions.Where(x => x.Sentences.Equals((string)id)).Count();
+            return a;
         }
-        public SentenceComplete getbyid(object id)
-        {
-            return _dbContext.sentenceCompletes.Find(id);
-        }
-/*        public List<SentenceComDTO> list(object id)
-        {
-            return _dbContext.sentenceCompletes.Where(x=>x.).ToList();
-        }*/
     }
     #endregion
 
     #region "sentences"
     public interface ISentenceRepositories : IRepository<Sentence>
     {
-        public void insertSentence(Sentence pracom);
-        public void deleteSentence(Sentence pracom);
-        public void updateSentence(Sentence pracom);
         public Sentence getbyid(object id);
         public List<Sentence> Listall(object id);
+        public int Count(object id);
+        public int? CorrectQuestion(object id, object user);
+        public int? TestCorrect(object id, object user);
+        public int CountQuestion(object id);
+        public decimal CorrectPercent(object id, object user);
     }
     public class SentenceRepository : RepositoryBase<Sentence>, ISentenceRepositories
     {
@@ -266,26 +115,48 @@ namespace API.Repositories
         {
 
         }
-        public void insertSentence(Sentence pracom)
-        {
-            _dbContext.sentences.Add(pracom);
-        }
-        public void deleteSentence(Sentence pracom)
-        {
-            _dbContext.sentences.Remove(pracom);
-        }
-        public void updateSentence(Sentence pracom)
-        {
-            _dbContext.sentences.Attach(pracom);
-            _dbContext.Entry(pracom).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-        }
         public Sentence getbyid(object id)
         {
             return _dbContext.sentences.Find(id);
         }
         public List<Sentence> Listall(object id)
         {
-            return _dbContext.sentences.Where(x => x.Practice.Equals((int)id)).ToList();
+            return _dbContext.sentences.Where(x => x.Exam.Equals((int)id)).OrderBy(x=>x.SentenceSerial).ToList();
+        }
+        public string getUserId(object user)
+        {
+            return _dbContext.users.Where(x => x.UserName.Equals((string)user)).Select(x => x.UserID).FirstOrDefault();
+        }
+        public int Count(object id)
+        {
+            return _dbContext.sentences.Where(x => x.Exam.Equals((int)id)).Count();
+        }
+        public int CountQuestion(object id)
+        {
+            return _dbContext.questions.Where(x => x.Sentences.Equals(id)).Count();
+        }
+        public int? TestCorrect(object id, object user)
+        {
+            string userId = getUserId((string)user);
+            return _dbContext.sentenceCompletes.Where(x => x.SentenceID
+            .Equals(_dbContext.sentences.Where(x => x.Exam.Equals((int)id)).Select(x => x.SentenceId).FirstOrDefault())
+            && x.Status.Equals(true) && x.User.Equals(userId)).Count();
+        }
+        public decimal CorrectPercent(object id, object user) {
+            string userId = getUserId((string)user);
+            int? sentence = _dbContext.sentenceCompletes.Where(x => x.SentenceID.Equals(id)
+            && x.User.Equals(userId)).Select(x => x.CorrectQuestion).FirstOrDefault();
+            if (sentence == null)
+            {
+                return (decimal)0.0;
+            }
+            return (decimal)sentence / CountQuestion(id); 
+        }
+        public int? CorrectQuestion(object id, object user)
+        {
+            string userId = getUserId((string)user);
+            return _dbContext.sentenceCompletes.Where(x => x.SentenceID.Equals(id)
+            && x.User.Equals(userId)).Select(x => x.CorrectQuestion).FirstOrDefault();
         }
     }
     #endregion
@@ -293,12 +164,10 @@ namespace API.Repositories
     #region "questioncomplete"
     public interface IQuestionCompleteRepositories : IRepository<QuestionComplete>
     {
-        public void insertQuesComplete(QuestionComplete quescom);
-        public void deleteQuesComplete(QuestionComplete quescom);
-        public void updateQuesComplete(QuestionComplete quescom);
-        public QuestionComplete getbyid(object id);
-        public List<QuestionComplete> list(object id);
-        public string findcorrcet(object id);
+        public QuestionComplete getbyuser(object id,object user);
+        public List<QuestionComplete> list(object id, object user);
+        //public string getdescription(object id);
+        public string getcorrectanswer(object id);
         public int CountCorrect(object id);
     }
     public class QuestionCompleteRepository : RepositoryBase<QuestionComplete>, IQuestionCompleteRepositories
@@ -307,35 +176,56 @@ namespace API.Repositories
         {
 
         }
-        public void insertQuesComplete(QuestionComplete quescom)
+        public string getUserId(object user)
         {
-            _dbContext.questionCompletes.Add(quescom);
+            return _dbContext.users.Where(x => x.UserName.Equals((string)user)).Select(x => x.UserID).FirstOrDefault();
         }
-        public void deleteQuesComplete(QuestionComplete quescom)
+        public QuestionComplete getbyuser(object id, object user)
         {
-            _dbContext.questionCompletes.Remove(quescom);
+            return _dbContext.questionCompletes.Where(x=>x.QuestionID.Equals(id)&&x.User.Equals(user)).FirstOrDefault();
         }
-        public void updateQuesComplete(QuestionComplete quescom)
+/*        public string getdescription (object id)
         {
-            _dbContext.questionCompletes.Attach(quescom);
-            _dbContext.Entry(quescom).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-        }
-        public QuestionComplete getbyid(object id)
-        {
-            return _dbContext.questionCompletes.Find(id);
-        }
-        public string findcorrcet (object id)
-        {
-            return _dbContext.questions.Where(x => x.QuestionID.Equals((int)id))
+            return _dbContext.questions.Where(x => x.QuestionID.Equals(id))
                 .Select(x => x.CorrectDescription).FirstOrDefault();
+        }*/
+        public string getcorrectanswer(object id)
+        {
+            return _dbContext.questions.Where(x => x.QuestionID.Equals(id))
+                .Select(x => x.CorrectAnswer).FirstOrDefault();
         }
         public int CountCorrect (object id)
         {
-            return _dbContext.questionCompletes.Where(x => x.Sentence.Equals((int)id) && x.IsCorrect.Equals(true)).Count();
+            return _dbContext.questionCompletes.Where(x => x.Sentence.Equals(id) && x.IsCorrect.Equals(true)).Count();
         }
-        public List<QuestionComplete> list(object id)
+        public List<QuestionComplete> list(object id,object user)
         {
-            return _dbContext.questionCompletes.Where(x => x.Sentence.Equals((int)id)).ToList();
+            string userID = getUserId(user);
+            return _dbContext.questionCompletes.Where(x => x.Sentence.Equals(id)&&x.User.Equals(userID)).ToList();
+        }
+    }
+    #endregion
+
+    #region"file"
+    public interface IFileRepositories : IRepository<QuestionFile>
+    {
+        public QuestionFile getbyname(object name);
+        public void deletes(object id);
+    }
+    public class FileRepository : RepositoryBase<QuestionFile>, IFileRepositories
+    {
+        public FileRepository(DB dbContext) : base(dbContext)
+        {
+
+        }
+        public void deletes(object id)
+        {
+            var files = _dbContext.files.Where(x=>x.Question.Equals((string)id)).ToList();
+            _dbContext.files.RemoveRange(files);
+        }
+        public QuestionFile getbyname(object name)
+        {
+            return _dbContext.files.Where(x=>x.FileName.Equals((string)name)).FirstOrDefault();
         }
     }
     #endregion

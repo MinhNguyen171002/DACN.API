@@ -40,18 +40,16 @@ builder.Services.AddScoped<HttpClient>();
 builder.Services.AddScoped<IUserRepositories, UserRepository>();
 builder.Services.AddScoped<IExamRepositories, ExamRepository>();
 builder.Services.AddScoped<IQuestionRepositories, QuestionRepository>();
-builder.Services.AddScoped<IResultRepositories, ResultRepository>();
-builder.Services.AddScoped<IPracticeRepositories, PracticeRepository>();
 builder.Services.AddScoped<ISentenceRepositories, SentenceRepository>();
 builder.Services.AddScoped<IQuestionRepositories, QuestionRepository>();
 builder.Services.AddScoped<IQuestionCompleteRepositories, QuestionCompleteRepository>();
 builder.Services.AddScoped<ISentenceCompleteRepositories, SentenceCompleteRepository>();
+builder.Services.AddScoped<IFileRepositories, FileRepository>();
 
+builder.Services.AddTransient<FileService>();
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<ExamService>();
 builder.Services.AddTransient<QuestionService>();
-builder.Services.AddTransient<ResultService>();
-builder.Services.AddTransient<PracticeService>();
 builder.Services.AddTransient<SentenceService>();
 builder.Services.AddTransient<QuestionComServices>();
 builder.Services.AddTransient<SentenceCompServices>();
@@ -74,6 +72,8 @@ builder.Services.AddAuthentication(options =>
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
                 };
             });
+
+builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 

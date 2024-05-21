@@ -240,21 +240,22 @@ namespace API.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "practices",
+                name: "sentences",
                 columns: table => new
                 {
-                    PracticeID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    PracticeDescription = table.Column<string>(type: "longtext", nullable: true)
+                    SentenceId = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    SentenceSerial = table.Column<int>(type: "int", nullable: false),
+                    Description = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Exam = table.Column<int>(type: "int", nullable: true),
                     ExamID = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_practices", x => x.PracticeID);
+                    table.PrimaryKey("PK_sentences", x => x.SentenceId);
                     table.ForeignKey(
-                        name: "FK_practices_exams_ExamID",
+                        name: "FK_sentences_exams_ExamID",
                         column: x => x.ExamID,
                         principalTable: "exams",
                         principalColumn: "ExamID",
@@ -263,34 +264,12 @@ namespace API.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "sentences",
-                columns: table => new
-                {
-                    SentenceId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    FilePath = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Practice = table.Column<int>(type: "int", nullable: true),
-                    PracticeID = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_sentences", x => x.SentenceId);
-                    table.ForeignKey(
-                        name: "FK_sentences_practices_PracticeID",
-                        column: x => x.PracticeID,
-                        principalTable: "practices",
-                        principalColumn: "PracticeID",
-                        onDelete: ReferentialAction.SetNull);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
                 name: "questions",
                 columns: table => new
                 {
-                    QuestionID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    QuestionID = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    QuestionSerial = table.Column<int>(type: "int", nullable: false),
                     QuestionContext = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Answer1 = table.Column<string>(type: "longtext", nullable: true)
@@ -303,8 +282,12 @@ namespace API.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CorrectAnswer = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Sentences = table.Column<int>(type: "int", nullable: true),
-                    sentencesSentenceId = table.Column<int>(type: "int", nullable: true)
+                    CorrectDescription = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Sentences = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    sentencesSentenceId = table.Column<string>(type: "varchar(255)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -322,12 +305,16 @@ namespace API.Migrations
                 name: "sentenceCompletes",
                 columns: table => new
                 {
-                    SentenceID = table.Column<int>(type: "int", nullable: false),
+                    SentenceID = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     Totaltime = table.Column<TimeSpan>(type: "time(6)", nullable: false),
                     Status = table.Column<bool>(type: "tinyint(1)", nullable: true),
-                    User = table.Column<string>(type: "varchar(255)", nullable: true)
+                    User = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Result = table.Column<int>(type: "int", nullable: true)
+                    Result = table.Column<double>(type: "double", nullable: true),
+                    CorrectQuestion = table.Column<int>(type: "int", nullable: true),
+                    UserID = table.Column<string>(type: "varchar(255)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -339,10 +326,37 @@ namespace API.Migrations
                         principalColumn: "SentenceId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_sentenceCompletes_users_User",
-                        column: x => x.User,
+                        name: "FK_sentenceCompletes_users_UserID",
+                        column: x => x.UserID,
                         principalTable: "users",
-                        principalColumn: "UserID");
+                        principalColumn: "UserID",
+                        onDelete: ReferentialAction.SetNull);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "files",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    FileName = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    FileData = table.Column<byte[]>(type: "longblob", nullable: false),
+                    Question = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    QuestionID = table.Column<string>(type: "varchar(255)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_files", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_files_questions_QuestionID",
+                        column: x => x.QuestionID,
+                        principalTable: "questions",
+                        principalColumn: "QuestionID",
+                        onDelete: ReferentialAction.SetNull);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -350,13 +364,20 @@ namespace API.Migrations
                 name: "questionCompletes",
                 columns: table => new
                 {
-                    QuestionID = table.Column<int>(type: "int", nullable: false),
+                    QuestionID = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    QuestionSerial = table.Column<int>(type: "int", nullable: false),
                     QuestionChoose = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     IsCorrect = table.Column<bool>(type: "tinyint(1)", nullable: true),
-                    CorrectDescription = table.Column<string>(type: "longtext", nullable: true)
+                    Sentence = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    SenComSentenceID = table.Column<int>(type: "int", nullable: true)
+                    User = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    UserID = table.Column<string>(type: "varchar(255)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    SenComSentenceID = table.Column<string>(type: "varchar(255)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -373,33 +394,12 @@ namespace API.Migrations
                         principalTable: "sentenceCompletes",
                         principalColumn: "SentenceID",
                         onDelete: ReferentialAction.SetNull);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "results",
-                columns: table => new
-                {
-                    ResultID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Score = table.Column<int>(type: "int", nullable: true),
-                    User = table.Column<string>(type: "varchar(255)", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Sentence = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_results", x => x.ResultID);
                     table.ForeignKey(
-                        name: "FK_results_sentenceCompletes_Sentence",
-                        column: x => x.Sentence,
-                        principalTable: "sentenceCompletes",
-                        principalColumn: "SentenceID");
-                    table.ForeignKey(
-                        name: "FK_results_users_User",
-                        column: x => x.User,
+                        name: "FK_questionCompletes_users_UserID",
+                        column: x => x.UserID,
                         principalTable: "users",
-                        principalColumn: "UserID");
+                        principalColumn: "UserID",
+                        onDelete: ReferentialAction.SetNull);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -411,7 +411,7 @@ namespace API.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { "a18be9c0-aa65-4af8-bd17-00bd9344e575", 0, "e038a6fa-3a6c-452c-b1f6-0d09f142078e", "admin@gmail.com", false, false, null, "admin@gmail.com", "admin", "AQAAAAIAAYagAAAAEKGCxL/FAFC05Y15NbVJ0ULUN5zupWeua1W4WasxY0h4zHoEbX09UoYRop2retIvKQ==", null, false, "", false, "admin" });
+                values: new object[] { "a18be9c0-aa65-4af8-bd17-00bd9344e575", 0, "58822dd7-7eb3-4e3a-9ee5-1bc0f67d6d8c", "admin@gmail.com", false, false, null, "admin@gmail.com", "admin", "AQAAAAIAAYagAAAAEDHeymj+swVbXatPu+riymb/fyn9qcAAp3hdcI0OJtvzX+DBHbQvpp+J9OQqd70ohg==", null, false, "", false, "admin" });
 
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
@@ -456,9 +456,9 @@ namespace API.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_practices_ExamID",
-                table: "practices",
-                column: "ExamID");
+                name: "IX_files_QuestionID",
+                table: "files",
+                column: "QuestionID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_questionCompletes_SenComSentenceID",
@@ -466,32 +466,24 @@ namespace API.Migrations
                 column: "SenComSentenceID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_questionCompletes_UserID",
+                table: "questionCompletes",
+                column: "UserID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_questions_sentencesSentenceId",
                 table: "questions",
                 column: "sentencesSentenceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_results_Sentence",
-                table: "results",
-                column: "Sentence",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_results_User",
-                table: "results",
-                column: "User",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_sentenceCompletes_User",
+                name: "IX_sentenceCompletes_UserID",
                 table: "sentenceCompletes",
-                column: "User",
-                unique: true);
+                column: "UserID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_sentences_PracticeID",
+                name: "IX_sentences_ExamID",
                 table: "sentences",
-                column: "PracticeID");
+                column: "ExamID");
         }
 
         /// <inheritdoc />
@@ -513,10 +505,10 @@ namespace API.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "questionCompletes");
+                name: "files");
 
             migrationBuilder.DropTable(
-                name: "results");
+                name: "questionCompletes");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -534,13 +526,10 @@ namespace API.Migrations
                 name: "users");
 
             migrationBuilder.DropTable(
-                name: "practices");
+                name: "exams");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
-                name: "exams");
         }
     }
 }
