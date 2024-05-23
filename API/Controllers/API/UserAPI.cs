@@ -80,9 +80,9 @@ namespace API.Controllers.API
         }
         [HttpGet]
         [Route("getquescom")]
-        public IActionResult ListQuesCom(string id,string name)
+        public IActionResult ListQuesCom(string id,string userid)
         {
-            return Ok(questionComServices.List(id,name));
+            return Ok(questionComServices.List(id,userid));
         }
         #endregion
 
@@ -111,9 +111,9 @@ namespace API.Controllers.API
         }       
         [HttpGet]
         [Route("getsencom")]
-        public async Task<IActionResult> GetSenCom (string id,string name)
+        public async Task<IActionResult> GetSenCom (string id,string userid)
         {
-            return Ok(await sentenceCompService.getSenCom(id, name));
+            return Ok(await sentenceCompService.getSenCom(id, userid));
         }
         #endregion
     }

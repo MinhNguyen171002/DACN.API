@@ -39,7 +39,7 @@ namespace API.Repositories
         }
         public int Count(object id)
         {
-            return _dbContext.sentences.Where(x => x.Exam.Equals((int)id)).Count();
+            return _dbContext.sentences.Where(x => x.exam.ExamID.Equals((int)id)).Count();
         }
     }
     #endregion
@@ -47,21 +47,21 @@ namespace API.Repositories
     #region "question"
     public interface IQuestionRepositories : IRepository<Question>
     {
-        public Question getbyid(object id);
         public List<Question> listall(object id);
+        public Sentence sentence(object id);
     }
     public class QuestionRepository : RepositoryBase<Question>, IQuestionRepositories
     {
         public QuestionRepository(DB dbContext) : base(dbContext)
         {
         }
-        public Question getbyid(object id)
+        public Sentence sentence(object id)
         {
-            return _dbContext.questions.Find(id);
+            return _dbContext.sentences.Find(id);
         }
         public List<Question> listall(object id)
         {
-            return _dbContext.questions.Where(x => x.Sentences.Equals(id)).ToList();
+            return _dbContext.questions.Where(x => x.sentence.SentenceId.Equals(id)).OrderBy(x => x.QuestionSerial).ToList();
         }
     }
     #endregion
@@ -69,9 +69,10 @@ namespace API.Repositories
     #region "sentencecomplete"
     public interface ISentenceCompleteRepositories : IRepository<SentenceComplete>
     {
-        public SentenceComplete getbyuser(object id,object user);
+        public SentenceComplete getbyuser(object id,object userid);
         public int? CorrectCount(object id, object user);
         public decimal? CorrectPercent(object id, object count);
+        public User user(object id);
     }
     public class SentenceCompleteRepository : RepositoryBase<SentenceComplete>, ISentenceCompleteRepositories
     {
@@ -79,20 +80,24 @@ namespace API.Repositories
         {
 
         }
-        public SentenceComplete getbyuser(object id,object user)
+        public User user(object id)
+        {
+            return _dbContext.users.Find(id);
+        }
+        public SentenceComplete getbyuser(object id,object userid)
         {
             return _dbContext.sentenceCompletes.Where(x => x.SentenceID.Equals((string)id)
-            && x.User.Equals((string)user)).FirstOrDefault();
+            && x.user.UserID.Equals(userid)).FirstOrDefault();
         }
         public int? CorrectCount(object id, object user)
         {
-            return _dbContext.questionCompletes.Where(x=>x.Sentence.Equals((string)id)
-            &&x.User.Equals((string)user)
+            return _dbContext.questionCompletes.Where(x=>x.sencom.SentenceID.Equals((string)id)
+            &&x.user.UserID.Equals((string)user)
             &&x.IsCorrect.Equals(true)).Count();                
         }
         public decimal? CorrectPercent(object id,object count)
         {
-            var a = (decimal)(int)count / _dbContext.questions.Where(x => x.Sentences.Equals((string)id)).Count();
+            var a = (decimal)(int)count / _dbContext.questions.Where(x => x.sentence.SentenceId.Equals((string)id)).Count();
             return a;
         }
     }
@@ -101,7 +106,7 @@ namespace API.Repositories
     #region "sentences"
     public interface ISentenceRepositories : IRepository<Sentence>
     {
-        public Sentence getbyid(object id);
+        public Exam exam(object id);
         public List<Sentence> Listall(object id);
         public int Count(object id);
         public int? CorrectQuestion(object id, object user);
@@ -115,13 +120,13 @@ namespace API.Repositories
         {
 
         }
-        public Sentence getbyid(object id)
+        public Exam exam(object id)
         {
-            return _dbContext.sentences.Find(id);
+            return _dbContext.exams.Find(id);
         }
         public List<Sentence> Listall(object id)
         {
-            return _dbContext.sentences.Where(x => x.Exam.Equals((int)id)).OrderBy(x=>x.SentenceSerial).ToList();
+            return _dbContext.sentences.Where(x => x.exam.ExamID.Equals((int)id)).OrderBy(x=>x.SentenceSerial).ToList();
         }
         public string getUserId(object user)
         {
@@ -129,23 +134,23 @@ namespace API.Repositories
         }
         public int Count(object id)
         {
-            return _dbContext.sentences.Where(x => x.Exam.Equals((int)id)).Count();
+            return _dbContext.sentences.Where(x => x.exam.ExamID.Equals((int)id)).Count();
         }
         public int CountQuestion(object id)
         {
-            return _dbContext.questions.Where(x => x.Sentences.Equals(id)).Count();
+            return _dbContext.questions.Where(x => x.sentence.SentenceId.Equals(id)).Count();
         }
         public int? TestCorrect(object id, object user)
         {
             string userId = getUserId((string)user);
             return _dbContext.sentenceCompletes.Where(x => x.SentenceID
-            .Equals(_dbContext.sentences.Where(x => x.Exam.Equals((int)id)).Select(x => x.SentenceId).FirstOrDefault())
-            && x.Status.Equals(true) && x.User.Equals(userId)).Count();
+            .Equals(_dbContext.sentences.Where(x => x.exam.ExamID.Equals((int)id)).Select(x => x.SentenceId).FirstOrDefault())
+            && x.Status.Equals(true) && x.user.UserID.Equals(userId)).Count();
         }
         public decimal CorrectPercent(object id, object user) {
             string userId = getUserId((string)user);
             int? sentence = _dbContext.sentenceCompletes.Where(x => x.SentenceID.Equals(id)
-            && x.User.Equals(userId)).Select(x => x.CorrectQuestion).FirstOrDefault();
+            && x.user.UserID.Equals(userId)).Select(x => x.CorrectQuestion).FirstOrDefault();
             if (sentence == null)
             {
                 return (decimal)0.0;
@@ -156,7 +161,7 @@ namespace API.Repositories
         {
             string userId = getUserId((string)user);
             return _dbContext.sentenceCompletes.Where(x => x.SentenceID.Equals(id)
-            && x.User.Equals(userId)).Select(x => x.CorrectQuestion).FirstOrDefault();
+            && x.user.UserID.Equals(userId)).Select(x => x.CorrectQuestion).FirstOrDefault();
         }
     }
     #endregion
@@ -164,11 +169,13 @@ namespace API.Repositories
     #region "questioncomplete"
     public interface IQuestionCompleteRepositories : IRepository<QuestionComplete>
     {
-        public QuestionComplete getbyuser(object id,object user);
-        public List<QuestionComplete> list(object id, object user);
+        public QuestionComplete getbyuser(object id,object userid);
+        public List<QuestionComplete> list(object id, object userid);
         //public string getdescription(object id);
         public string getcorrectanswer(object id);
         public int CountCorrect(object id);
+        public User user (object id);
+        public SentenceComplete sentence(object id);
     }
     public class QuestionCompleteRepository : RepositoryBase<QuestionComplete>, IQuestionCompleteRepositories
     {
@@ -176,13 +183,17 @@ namespace API.Repositories
         {
 
         }
-        public string getUserId(object user)
+        public User user (object id)
         {
-            return _dbContext.users.Where(x => x.UserName.Equals((string)user)).Select(x => x.UserID).FirstOrDefault();
+            return _dbContext.users.Find(id);
         }
-        public QuestionComplete getbyuser(object id, object user)
+        public SentenceComplete sentence(object id)
         {
-            return _dbContext.questionCompletes.Where(x=>x.QuestionID.Equals(id)&&x.User.Equals(user)).FirstOrDefault();
+            return _dbContext.sentenceCompletes.Find(id);
+        }
+        public QuestionComplete getbyuser(object id, object userid)
+        {
+            return _dbContext.questionCompletes.Where(x=>x.QuestionID.Equals(id)&&x.user.UserID.Equals(userid)).FirstOrDefault();
         }
 /*        public string getdescription (object id)
         {
@@ -196,12 +207,11 @@ namespace API.Repositories
         }
         public int CountCorrect (object id)
         {
-            return _dbContext.questionCompletes.Where(x => x.Sentence.Equals(id) && x.IsCorrect.Equals(true)).Count();
+            return _dbContext.questionCompletes.Where(x => x.sencom.Equals(id) && x.IsCorrect.Equals(true)).Count();
         }
-        public List<QuestionComplete> list(object id,object user)
+        public List<QuestionComplete> list(object id,object userid)
         {
-            string userID = getUserId(user);
-            return _dbContext.questionCompletes.Where(x => x.Sentence.Equals(id)&&x.User.Equals(userID)).ToList();
+            return _dbContext.questionCompletes.Where(x => x.user.UserID.Equals(userid) &&x.sencom.SentenceID.Equals(id)).OrderBy(x => x.QuestionSerial).ToList();
         }
     }
     #endregion
@@ -211,6 +221,7 @@ namespace API.Repositories
     {
         public QuestionFile getbyname(object name);
         public void deletes(object id);
+        public Question question(object id);
     }
     public class FileRepository : RepositoryBase<QuestionFile>, IFileRepositories
     {
@@ -218,9 +229,13 @@ namespace API.Repositories
         {
 
         }
+        public Question question(object id)
+        {
+            return _dbContext.questions.Find(id);
+        }
         public void deletes(object id)
         {
-            var files = _dbContext.files.Where(x=>x.Question.Equals((string)id)).ToList();
+            var files = _dbContext.files.Where(x=>x.ques.QuestionID.Equals((string)id)).ToList();
             _dbContext.files.RemoveRange(files);
         }
         public QuestionFile getbyname(object name)

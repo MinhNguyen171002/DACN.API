@@ -33,16 +33,16 @@ namespace API.DBContext
 
             builder.Entity<Sentence>()
                 .HasMany(c => c.questions)
-                .WithOne(c => c.sentences)
+                .WithOne(c => c.sentence)
                 .OnDelete(DeleteBehavior.SetNull);
 
             builder.Entity<SentenceComplete>()
                 .HasMany(c => c.QuestionCompletes)
-                .WithOne(c => c.SenCom)
+                .WithOne(c => c.sencom)
                 .OnDelete(DeleteBehavior.SetNull);
 
             builder.Entity<Question>()
-                .HasOne(c => c.sentences)
+                .HasOne(c => c.sentence)
                 .WithMany(c => c.questions)
                 .OnDelete(DeleteBehavior.SetNull);
 
@@ -65,7 +65,7 @@ namespace API.DBContext
                 .WithOne(c => c.quescom).HasForeignKey<QuestionComplete>(c => c.QuestionID);
 
             builder.Entity<SentenceComplete>()
-                .HasOne(c => c.Sentence)
+                .HasOne(c => c.sentence)
                 .WithOne(c => c.sencom).HasForeignKey<SentenceComplete>(c => c.SentenceID);
 
             builder.Entity<IdentityRole>().HasData(new IdentityRole

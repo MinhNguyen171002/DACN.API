@@ -70,15 +70,12 @@ namespace API.Migrations
                     b.Property<int?>("QuestionSerial")
                         .HasColumnType("int");
 
-                    b.Property<string>("Sentences")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("sentencesSentenceId")
+                    b.Property<string>("SentenceId")
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("QuestionID");
 
-                    b.HasIndex("sentencesSentenceId");
+                    b.HasIndex("SentenceId");
 
                     b.ToTable("questions");
                 });
@@ -97,23 +94,17 @@ namespace API.Migrations
                     b.Property<int>("QuestionSerial")
                         .HasColumnType("int");
 
-                    b.Property<string>("SenComSentenceID")
+                    b.Property<string>("UserID")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("Sentence")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("User")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("UserID")
+                    b.Property<string>("sencomSentenceID")
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("QuestionID");
 
-                    b.HasIndex("SenComSentenceID");
-
                     b.HasIndex("UserID");
+
+                    b.HasIndex("sencomSentenceID");
 
                     b.ToTable("questionCompletes");
                 });
@@ -133,10 +124,6 @@ namespace API.Migrations
                     b.Property<string>("FileType")
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Question")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.Property<string>("QuestionID")
                         .HasColumnType("varchar(255)");
 
@@ -154,9 +141,6 @@ namespace API.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("longtext");
-
-                    b.Property<int?>("Exam")
-                        .HasColumnType("int");
 
                     b.Property<int?>("ExamID")
                         .HasColumnType("int");
@@ -184,9 +168,6 @@ namespace API.Migrations
 
                     b.Property<TimeSpan>("Totaltime")
                         .HasColumnType("time(6)");
-
-                    b.Property<string>("User")
-                        .HasColumnType("longtext");
 
                     b.Property<string>("UserID")
                         .HasColumnType("varchar(255)");
@@ -347,13 +328,13 @@ namespace API.Migrations
                         {
                             Id = "a18be9c0-aa65-4af8-bd17-00bd9344e575",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "ef20ced9-d296-4998-bdb9-ae6625f2943e",
+                            ConcurrencyStamp = "2916b412-259b-4948-869d-7478051ae7f4",
                             Email = "admin@gmail.com",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
                             NormalizedEmail = "admin@gmail.com",
                             NormalizedUserName = "admin",
-                            PasswordHash = "AQAAAAIAAYagAAAAEGe3RYYPwZMzBQ59JbgU08Rg81IANhCgDwHj1cXW3jCszNcGSRNUVAS+v/pqYuEATA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAED9zi7my9KBYAOJ9qVNo/6imLw6r8eXRGs0/jUfG7lWAESujRs8jB2+OJ5plbVe/cA==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             TwoFactorEnabled = false,
@@ -451,12 +432,12 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Enity.Question", b =>
                 {
-                    b.HasOne("API.Enity.Sentence", "sentences")
+                    b.HasOne("API.Enity.Sentence", "sentence")
                         .WithMany("questions")
-                        .HasForeignKey("sentencesSentenceId")
+                        .HasForeignKey("SentenceId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.Navigation("sentences");
+                    b.Navigation("sentence");
                 });
 
             modelBuilder.Entity("API.Enity.QuestionComplete", b =>
@@ -467,17 +448,17 @@ namespace API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("API.Enity.SentenceComplete", "SenCom")
-                        .WithMany("QuestionCompletes")
-                        .HasForeignKey("SenComSentenceID")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("API.Enity.User", "user")
                         .WithMany("quescoms")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.Navigation("SenCom");
+                    b.HasOne("API.Enity.SentenceComplete", "sencom")
+                        .WithMany("QuestionCompletes")
+                        .HasForeignKey("sencomSentenceID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("sencom");
 
                     b.Navigation("test");
 
@@ -506,7 +487,7 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Enity.SentenceComplete", b =>
                 {
-                    b.HasOne("API.Enity.Sentence", "Sentence")
+                    b.HasOne("API.Enity.Sentence", "sentence")
                         .WithOne("sencom")
                         .HasForeignKey("API.Enity.SentenceComplete", "SentenceID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -517,7 +498,7 @@ namespace API.Migrations
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.Navigation("Sentence");
+                    b.Navigation("sentence");
 
                     b.Navigation("user");
                 });

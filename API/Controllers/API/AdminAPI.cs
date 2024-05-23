@@ -172,7 +172,7 @@ namespace API.Controllers.API
             {
                 await file.FileData.CopyToAsync(memoryStream);
                 var fileData = memoryStream.ToArray();
-                return Ok(await fileService.insert(fileData, file.FileData.FileName, file.Question, file.userName,file.fileType));
+                return Ok(await fileService.insert(fileData, file.FileData.FileName, file.Question, file.UserID,file.fileType));
             }
         }
         [HttpDelete]

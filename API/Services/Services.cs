@@ -67,7 +67,7 @@ namespace API.Services
         }
         public async Task<Response> insert(ExamDTO ex)
         {
-            var user = await _userManager.FindByNameAsync(ex.UserName);
+            var user = await _userManager.FindByIdAsync(ex.UserID);
             var roles = await _userManager.GetRolesAsync(user);
 
             if (roles.FirstOrDefault() == "admin")
@@ -86,7 +86,7 @@ namespace API.Services
         }
         public async Task<Response> update(ExamDTO ex)
         {
-            var user = await _userManager.FindByNameAsync(ex.UserName);
+            var user = await _userManager.FindByIdAsync(ex.UserID);
             var roles = await _userManager.GetRolesAsync(user);
             if (roles.FirstOrDefault() == "admin")
             {
@@ -106,7 +106,7 @@ namespace API.Services
         }
         public async Task<Response> delete(ExamDTO ex)
         {
-            var user = await _userManager.FindByNameAsync(ex.UserName);
+            var user = await _userManager.FindByIdAsync(ex.UserID);
             var roles = await _userManager.GetRolesAsync(user);
             if (roles.FirstOrDefault() == "admin")
             {
@@ -123,18 +123,24 @@ namespace API.Services
         }
         public List<ExamGDTO> List(string skill)
         {
-            List<ExamGDTO> examDTOs = new List<ExamGDTO>();
             var exams = examRepositories.Listall(skill);
-            foreach (var exam in exams)
+            List<ExamGDTO> examDTOs = new List<ExamGDTO>(exams.Capacity);
+            if (!exams.IsNullOrEmpty())
             {
-                examDTOs.Add(new ExamGDTO { 
-                    ExamID = exam.ExamID,
-                    ExamDuration = exam.ExamDuration,
-                    ExamDescription = exam.ExamDescription,
-                    Skill = exam.Skill,
-                    PracticeCount = examRepositories.Count(exam.ExamID) });
+                foreach (var exam in exams)
+                {
+                    examDTOs.Add(new ExamGDTO
+                    {
+                        ExamID = exam.ExamID,
+                        ExamDuration = exam.ExamDuration,
+                        ExamDescription = exam.ExamDescription,
+                        Skill = exam.Skill,
+                        PracticeCount = examRepositories.Count(exam.ExamID)
+                    });
+                }
+                return examDTOs;
             }
-            return examDTOs;
+            return Enumerable.Empty<ExamGDTO>().ToList();
         }
     }
     #endregion
@@ -159,8 +165,9 @@ namespace API.Services
         }
         public async Task<Response> insert(QuestionFDTO ques)
         {
-            var user = await _userManager.FindByNameAsync(ques.UserName);
+            var user = await _userManager.FindByIdAsync(ques.UserID);
             var roles = await _userManager.GetRolesAsync(user);
+            Sentence sentence = questionRepositories.sentence(ques.SentenceID);
             if (roles.FirstOrDefault() == "admin")
             {
                 string filePath = ques.FilePath.ToString();
@@ -182,7 +189,7 @@ namespace API.Services
                             Answer3 = quesDTO[4],
                             Answer4 = quesDTO[5],
                             CorrectAnswer = quesDTO[6],
-                            Sentences = ques.SentenceID,
+                            sentence = sentence,
                         });
                     }
                     questionRepositories.AddRange(questions);
@@ -198,11 +205,11 @@ namespace API.Services
         }
         public async Task<Response> update(QuestionDTO ques)
         {
-            var user = await _userManager.FindByNameAsync(ques.UserName);
+            var user = await _userManager.FindByIdAsync(ques.UserID);
             var roles = await _userManager.GetRolesAsync(user);
             if (roles.FirstOrDefault() == "admin")
             {
-                Question question = questionRepositories.getbyid(ques.QuestionID);
+                Question question = questionRepositories.GetById(ques.QuestionID);
                 if (question != null)
                 {
                     question.QuestionSerial = ques.QuestionSerial;
@@ -212,7 +219,6 @@ namespace API.Services
                     question.Answer4 = ques.Answer4;
                     question.QuestionContext = ques.QuestionContext;
                     question.CorrectAnswer = ques.CorrectAnswer;
-                    question.Sentences = ques.SentenceID;
                     questionRepositories.Update(question);
                     Save();
                     return new Response { Status = true, Message = "Success" };
@@ -223,7 +229,7 @@ namespace API.Services
         }
         public async Task<Response> delete(QuestionDTO ques)
         {
-            var user = await _userManager.FindByNameAsync(ques.UserName);
+            var user = await _userManager.FindByIdAsync(ques.UserID);
             var roles = await _userManager.GetRolesAsync(user);
             if (roles.FirstOrDefault() == "admin")
             {
@@ -240,24 +246,28 @@ namespace API.Services
         }
         public List<QuestionGDTO> List(string id)
         {
-            List<QuestionGDTO> questionDTOs = new List<QuestionGDTO>();
             var questions = questionRepositories.listall(id);
-            foreach (var question in questions)
+            List<QuestionGDTO> questionDTOs = new List<QuestionGDTO>(questions.Capacity);
+            if (!questions.IsNullOrEmpty())
             {
-                questionDTOs.Add(new QuestionGDTO
+                foreach (var question in questions)
                 {
-                    QuestionID = question.QuestionID,
-                    QuestionSerial = question.QuestionSerial,
-                    QuestionContext = question.QuestionContext,
-                    Answer1 = question.Answer1,
-                    Answer2 = question.Answer2,
-                    Answer3 = question.Answer3,
-                    Answer4 = question.Answer4,
-                    CorrectAnswer = question.CorrectAnswer,
-                    SentenceID =  question.Sentences
-                });
+                    questionDTOs.Add(new QuestionGDTO
+                    {
+                        QuestionID = question.QuestionID,
+                        QuestionSerial = question.QuestionSerial,
+                        QuestionContext = question.QuestionContext,
+                        Answer1 = question.Answer1,
+                        Answer2 = question.Answer2,
+                        Answer3 = question.Answer3,
+                        Answer4 = question.Answer4,
+                        CorrectAnswer = question.CorrectAnswer,
+                        SentenceID = question.sentence.SentenceId
+                    });
+                }
+                return questionDTOs;
             }
-            return questionDTOs;
+            return Enumerable.Empty<QuestionGDTO>().ToList();
         }
     }
     #endregion
@@ -266,7 +276,6 @@ namespace API.Services
     public class SentenceCompServices
     {
         private DB dBContext;
-        private readonly UserManager<IdentityUser> _userManager;
         private ISentenceCompleteRepositories sencomRepositories;
         private IMapper _mapper;
 
@@ -274,7 +283,6 @@ namespace API.Services
         {
             this.dBContext = dBContext;
             this.sencomRepositories = new SentenceCompleteRepository(dBContext);
-            this._userManager = userManager;
             _mapper = mapper;  
         }
         public void Save()
@@ -283,12 +291,13 @@ namespace API.Services
         }
         public async Task<Response> insert(SentenceComDTO sencom)
         {
-            var user = await _userManager.FindByNameAsync(sencom.User);
-            SentenceComplete sen = sencomRepositories.getbyuser(sencom.SentenceID,user.Id);
-            if (sen == null && user != null)
+            User user = sencomRepositories.user(sencom.UserID);
+            SentenceComplete sen = sencomRepositories.getbyuser(sencom.SentenceID,sencom.UserID);
+            if (sen == null)
             {
                 SentenceComplete sen1 = _mapper.Map<SentenceComplete>(sencom);
-                sen1.CorrectQuestion = sencomRepositories.CorrectCount(sencom.SentenceID, user.Id);
+                sen1.CorrectQuestion = sencomRepositories.CorrectCount(sencom.SentenceID, sencom.UserID);
+                sen1.user = user;
                 sencomRepositories.Add(sen1);
                 Save();
                 return new Response { Status = true, Message = "Success" };
@@ -297,9 +306,8 @@ namespace API.Services
         }
         public async Task<Response> delete(SentenceComDTO sencom)
         {
-            var user = await _userManager.FindByNameAsync(sencom.User);
-            SentenceComplete sen = sencomRepositories.getbyuser(sencom.SentenceID,user.Id);
-            if (sen != null && user != null)
+            SentenceComplete sen = sencomRepositories.getbyuser(sencom.SentenceID,sencom.UserID);
+            if (sen != null)
             {
                 sencomRepositories.Delete(sen);
                 Save();
@@ -307,10 +315,9 @@ namespace API.Services
             }
             return new Response { Status = false, Message = "Sentence not found!!!" };
         }
-        public async Task<SentenceComGDTO> getSenCom(string id, string name)
+        public async Task<SentenceComGDTO> getSenCom(string id, string userid)
         {
-            var user = await _userManager.FindByNameAsync(name);
-            SentenceComplete sentence = sencomRepositories.getbyuser(id,user.Id);
+            SentenceComplete sentence = sencomRepositories.getbyuser(id,userid);
             if(sentence == null)
             {
                 return new  SentenceComGDTO
@@ -355,14 +362,16 @@ namespace API.Services
         }
         public async Task<Response> insert(SentenceDTO sen)
         {
-            var user = await _userManager.FindByNameAsync(sen.Username);
+            var user = await _userManager.FindByIdAsync(sen.UserID);
             var roles = await _userManager.GetRolesAsync(user);
+            Exam exam = senRepositories.exam(sen.ExamId);
             if (roles.FirstOrDefault() == "admin")
             {
                 Sentence sentence = _mapper.Map<Sentence>(sen);
                 sentence.SentenceId = Guid.NewGuid().ToString();
+                sentence.exam = exam;
                 var IsVaild = senRepositories.GetById(sentence.SentenceId);
-                if (IsVaild!=null)
+                if (IsVaild==null)
                 {
                     senRepositories.Add(sentence);
                     Save();
@@ -374,14 +383,13 @@ namespace API.Services
         }
         public async Task<Response> update(SentenceDTO sen)
         {
-            var user = await _userManager.FindByNameAsync(sen.Username);
+            var user = await _userManager.FindByIdAsync(sen.UserID);
             var roles = await _userManager.GetRolesAsync(user);
             if (roles.FirstOrDefault() == "admin")
             {
-                Sentence sentence = senRepositories.getbyid(sen.SentenceId);
+                Sentence sentence = senRepositories.GetById(sen.SentenceId);
                 if (sentence != null)
                 {
-                    sentence.Exam = sen.ExamId;
                     sentence.SentenceSerial = sen.SentenceSerial;
                     sentence.Description = sen.Description;
                     senRepositories.Update(sentence);
@@ -394,7 +402,7 @@ namespace API.Services
         }
         public async Task<Response> delete(SentenceDTO sen)
         {
-            var user = await _userManager.FindByNameAsync(sen.Username);
+            var user = await _userManager.FindByIdAsync(sen.UserID);
             var roles = await _userManager.GetRolesAsync(user);
             if (roles.FirstOrDefault() == "admin")
             {
@@ -411,21 +419,25 @@ namespace API.Services
         }
         public List<UserSentenceDTO> List(int id, string user)
         {
-            List<UserSentenceDTO> sentenceDTOs = new List<UserSentenceDTO>();
             var sentences = senRepositories.Listall(id);
-            foreach (var sentence in sentences)
+            List<UserSentenceDTO> sentenceDTOs = new List<UserSentenceDTO>(sentences.Capacity);
+            if (!sentences.IsNullOrEmpty())
             {
-                sentenceDTOs.Add(new UserSentenceDTO
+                foreach (var sentence in sentences)
                 {
-                    SentenceSerial = sentence.SentenceSerial,
-                    SentenceId = sentence.SentenceId,                    
-                    Description = sentence.Description,
-                    QuestionCount = senRepositories.CountQuestion(sentence.SentenceId),
-                    CorrectPercent = (int)(senRepositories.CorrectPercent(sentence.SentenceId, user) * 100),
-                    CorrectQuestion = senRepositories.CorrectQuestion(sentence.SentenceId, user),
-                });
+                    sentenceDTOs.Add(new UserSentenceDTO
+                    {
+                        SentenceSerial = sentence.SentenceSerial,
+                        SentenceId = sentence.SentenceId,
+                        Description = sentence.Description,
+                        QuestionCount = senRepositories.CountQuestion(sentence.SentenceId),
+                        CorrectPercent = (int)(senRepositories.CorrectPercent(sentence.SentenceId, user) * 100),
+                        CorrectQuestion = senRepositories.CorrectQuestion(sentence.SentenceId, user),
+                    });
+                }
+                return sentenceDTOs;
             }
-            return sentenceDTOs;
+            return Enumerable.Empty<UserSentenceDTO>().ToList();
         }
         public PracticeDTO getPractice(int id, string user)
         {
@@ -443,15 +455,13 @@ namespace API.Services
     public class QuestionComServices
     {
         private DB dBContext;
-        private readonly UserManager<IdentityUser> _userManager;
         private IQuestionCompleteRepositories quescomRepositories;
         private IMapper _mapper;
 
-        public QuestionComServices(DB dBContext, UserManager<IdentityUser> userManager,IMapper mapper)
+        public QuestionComServices(DB dBContext,IMapper mapper)
         {
             this.dBContext = dBContext;
             this.quescomRepositories = new QuestionCompleteRepository(dBContext);
-            this._userManager = userManager;
             _mapper = mapper;
         }
         public void Save()
@@ -460,11 +470,15 @@ namespace API.Services
         }
         public async Task<Response> insert(QuestionComDTO ques)
         {
-            var user = await _userManager.FindByNameAsync(ques.User);
-            QuestionComplete quescom = quescomRepositories.getbyuser(ques.QuestionSerial,user.Id);
+            SentenceComplete? sentence = quescomRepositories.sentence(ques.SentenceID);
+            User user = quescomRepositories.user(ques.UserID);
+            QuestionComplete quescom = quescomRepositories.getbyuser(ques.QuestionSerial,ques.UserID);
             if (quescom == null)
             {
-                QuestionComplete quescom1 = _mapper.Map<QuestionComplete>(ques);
+                QuestionComplete quescom1 = _mapper.Map<QuestionComDTO,QuestionComplete>(ques);
+                quescom1.sencom = sentence;
+                quescom1.user = user;
+                int i = 0;
                 quescomRepositories.Add(quescom1);
                 Save();
                 return new Response { Status = true, Message = "Success" };
@@ -474,8 +488,7 @@ namespace API.Services
         }
         public async Task<Response> update(QuestionComDTO ques)
         {
-            var user = await _userManager.FindByNameAsync(ques.User);
-            QuestionComplete quescom = quescomRepositories.getbyuser(ques.QuestionSerial, user.Id);
+            QuestionComplete quescom = quescomRepositories.getbyuser(ques.QuestionSerial,ques.UserID);
             if (quescom != null)
             {
                 quescom.QuestionChoose = ques.QuestionChoose;
@@ -488,9 +501,8 @@ namespace API.Services
         }       
         public async Task<Response> deletes(QuestionComDTO ques)
         {
-            var user = await _userManager.FindByNameAsync(ques.User);
-            var questions = quescomRepositories.list(ques.Sentence,user.Id);
-            if (user != null && questions !=null)
+            var questions = quescomRepositories.list(ques.SentenceID,ques.UserID);
+            if (questions !=null)
             {
                 quescomRepositories.DeleteRange(questions);
                 Save();
@@ -499,22 +511,26 @@ namespace API.Services
             return new Response { Status = false, Message = "Question not found!!!" };
         }
 
-        public List<QuestionComGDTO> List(string id,string name)
+        public List<QuestionComGDTO> List(string id,string userid)
         {
-            List<QuestionComGDTO> quescomDTOs = new List<QuestionComGDTO>();
-            var questions = quescomRepositories.list(id,name);
-            foreach (var question in questions)
+            var questions = quescomRepositories.list(id,userid);
+            List<QuestionComGDTO> quescomDTOs = new List<QuestionComGDTO>(questions.Capacity);
+            if (questions.IsNullOrEmpty())
             {
-                quescomDTOs.Add(new QuestionComGDTO
+                foreach (var question in questions)
                 {
-                    QuestionSerial = question.QuestionSerial,
-                    QuestionChoose = question.QuestionChoose,
-                    IsCorrect = question.IsCorrect,
-                    //CorrectDescription = quescomRepositories.getdescription(question.QuestionID),
-                    CorrectAnswer = quescomRepositories.getcorrectanswer(question.QuestionID),
-                });
+                    quescomDTOs.Add(new QuestionComGDTO
+                    {
+                        QuestionSerial = question.QuestionSerial,
+                        QuestionChoose = question.QuestionChoose,
+                        IsCorrect = question.IsCorrect,
+                        //CorrectDescription = quescomRepositories.getdescription(question.QuestionID),
+                        CorrectAnswer = quescomRepositories.getcorrectanswer(question.QuestionID),
+                    });
+                }
+                return quescomDTOs;
             }
-            return quescomDTOs;
+            return Enumerable.Empty<QuestionComGDTO>().ToList();
         }
 
     }
@@ -536,11 +552,12 @@ namespace API.Services
         {
             dBContext.SaveChanges();
         }
-        public async Task<Response> insert(byte[] data,string filename, string id,string name,string filetype)
+        public async Task<Response> insert(byte[] data,string filename, string id,string userid,string filetype)
         {
-            var user = await _userManager.FindByNameAsync(name);
+            var user = await _userManager.FindByIdAsync(userid);
             var roles = await _userManager.GetRolesAsync(user);
             QuestionFile qfile = fileRepositories.getbyname(filename);
+            Question question = fileRepositories.question(id);
             if (qfile == null && roles.FirstOrDefault() == "admin")
             {
                 QuestionFile file1 = new QuestionFile()
@@ -548,7 +565,7 @@ namespace API.Services
                     Id = Guid.NewGuid().ToString(),
                     FileName = filename,
                     FileData = data,
-                    Question = id,
+                    ques = question,
                     FileType = filetype,
                 };
                 fileRepositories.Add(file1);
@@ -559,7 +576,7 @@ namespace API.Services
         }
         public async Task<Response> delete(FileDTO file)
         {
-            var user = await _userManager.FindByNameAsync(file.userName);
+            var user = await _userManager.FindByIdAsync(file.UserID);
             var roles = await _userManager.GetRolesAsync(user);
             QuestionFile file1 = fileRepositories.getbyname(file.fileName);
             if (file1 != null && roles.FirstOrDefault() == "admin")

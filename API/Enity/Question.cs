@@ -14,9 +14,8 @@ namespace API.Enity
         public string? Answer3 { get; set; }
         public string? Answer4 { get; set; }
         public string? CorrectAnswer { get; set; }
-        public string? Sentences { get; set; }
         public virtual QuestionComplete quescom { get; set; }
-        public virtual Sentence? sentences { get; set; }
+        public virtual Sentence? sentence { get; set; }
         public virtual ICollection<QuestionFile>? files { get; set; }
 
     }

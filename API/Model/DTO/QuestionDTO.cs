@@ -2,7 +2,7 @@
 {
     public class QuestionDTO
     {
-        public string? UserName { get; set; }
+        public string? UserID { get; set; }
         public string? QuestionID { get; set; }
         public int? QuestionSerial { get; set; }
         public string? QuestionContext { get; set; }

@@ -8,12 +8,12 @@ namespace API.Data
     {
         public MappingProfile() 
         {
-            CreateMap<ExamDTO, Exam>();
-            CreateMap<SentenceDTO, Sentence>();
-            CreateMap<QuestionDTO, Question>();
-            CreateMap<QuestionDTO, QuestionComplete>();
-            CreateMap<SentenceComDTO, SentenceComplete>();
-            CreateMap<FileDTO, QuestionFile>();
+            CreateMap<ExamDTO, Exam>().ReverseMap();
+            CreateMap<SentenceDTO, Sentence>().ReverseMap();
+            CreateMap<QuestionDTO, Question>().ReverseMap();
+            CreateMap<QuestionComDTO, QuestionComplete>().ReverseMap();
+            CreateMap<SentenceComDTO, SentenceComplete>().ReverseMap();
+            CreateMap<FileDTO, QuestionFile>().ReverseMap();
         }              
     }
 }

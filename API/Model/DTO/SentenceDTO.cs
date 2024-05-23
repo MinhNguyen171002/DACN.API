@@ -2,7 +2,7 @@
 {
     public class SentenceDTO
     {
-        public string? Username { get; set; }
+        public string? UserID { get; set; }
         public string? SentenceId { get; set; }
         public int? SentenceSerial { get; set; }
         public int? ExamId { get; set; }

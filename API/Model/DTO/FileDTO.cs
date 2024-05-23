@@ -2,7 +2,7 @@
 {
     public class FileDTO
     {
-        public string? userName { get; set; }
+        public string? UserID { get; set; }
         public string? fileName { get; set; }
         public string? fileType { get; set; }
         public IFormFile? FileData { get; set; }

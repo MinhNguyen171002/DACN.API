@@ -9,10 +9,9 @@ namespace API.Enity
         public string SentenceID { get; set; }
         public TimeSpan Totaltime { get; set; }
         public bool? Status {  get; set; }
-        public string? User { get; set; }
         public int? CorrectQuestion { get; set; }
         public ICollection<QuestionComplete>? QuestionCompletes { get; set; }
         public virtual User? user { get; set; }
-        public virtual Sentence? Sentence { get;set; }
+        public virtual Sentence? sentence { get;set; }
     }
 }

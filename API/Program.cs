@@ -1,3 +1,5 @@
+using API.Controllers.ServerHub;
+using API.Data;
 using API.DBContext;
 using API.Enity;
 using API.Repositories;
@@ -73,7 +75,9 @@ builder.Services.AddAuthentication(options =>
                 };
             });
 
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -90,5 +94,7 @@ app.UseAuthorization();
 app.UseCors("CorsPolicy");
 
 app.MapControllers();
+
+app.MapHub<StreamingFile>("streaming-file");
 
 app.Run();

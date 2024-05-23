@@ -245,10 +245,9 @@ namespace API.Migrations
                 {
                     SentenceId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    SentenceSerial = table.Column<int>(type: "int", nullable: false),
+                    SentenceSerial = table.Column<int>(type: "int", nullable: true),
                     Description = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Exam = table.Column<int>(type: "int", nullable: true),
                     ExamID = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -269,7 +268,7 @@ namespace API.Migrations
                 {
                     QuestionID = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    QuestionSerial = table.Column<int>(type: "int", nullable: false),
+                    QuestionSerial = table.Column<int>(type: "int", nullable: true),
                     QuestionContext = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Answer1 = table.Column<string>(type: "longtext", nullable: true)
@@ -282,19 +281,15 @@ namespace API.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CorrectAnswer = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    CorrectDescription = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Sentences = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    sentencesSentenceId = table.Column<string>(type: "varchar(255)", nullable: true)
+                    SentenceId = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_questions", x => x.QuestionID);
                     table.ForeignKey(
-                        name: "FK_questions_sentences_sentencesSentenceId",
-                        column: x => x.sentencesSentenceId,
+                        name: "FK_questions_sentences_SentenceId",
+                        column: x => x.SentenceId,
                         principalTable: "sentences",
                         principalColumn: "SentenceId",
                         onDelete: ReferentialAction.SetNull);
@@ -309,9 +304,6 @@ namespace API.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Totaltime = table.Column<TimeSpan>(type: "time(6)", nullable: false),
                     Status = table.Column<bool>(type: "tinyint(1)", nullable: true),
-                    User = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Result = table.Column<double>(type: "double", nullable: true),
                     CorrectQuestion = table.Column<int>(type: "int", nullable: true),
                     UserID = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
@@ -342,9 +334,9 @@ namespace API.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     FileName = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    FileData = table.Column<byte[]>(type: "longblob", nullable: false),
-                    Question = table.Column<string>(type: "longtext", nullable: false)
+                    FileType = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    FileData = table.Column<byte[]>(type: "longblob", nullable: false),
                     QuestionID = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
@@ -370,13 +362,9 @@ namespace API.Migrations
                     QuestionChoose = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     IsCorrect = table.Column<bool>(type: "tinyint(1)", nullable: true),
-                    Sentence = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    User = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
                     UserID = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    SenComSentenceID = table.Column<string>(type: "varchar(255)", nullable: true)
+                    sencomSentenceID = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
@@ -389,8 +377,8 @@ namespace API.Migrations
                         principalColumn: "QuestionID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_questionCompletes_sentenceCompletes_SenComSentenceID",
-                        column: x => x.SenComSentenceID,
+                        name: "FK_questionCompletes_sentenceCompletes_sencomSentenceID",
+                        column: x => x.sencomSentenceID,
                         principalTable: "sentenceCompletes",
                         principalColumn: "SentenceID",
                         onDelete: ReferentialAction.SetNull);
@@ -411,7 +399,7 @@ namespace API.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { "a18be9c0-aa65-4af8-bd17-00bd9344e575", 0, "58822dd7-7eb3-4e3a-9ee5-1bc0f67d6d8c", "admin@gmail.com", false, false, null, "admin@gmail.com", "admin", "AQAAAAIAAYagAAAAEDHeymj+swVbXatPu+riymb/fyn9qcAAp3hdcI0OJtvzX+DBHbQvpp+J9OQqd70ohg==", null, false, "", false, "admin" });
+                values: new object[] { "a18be9c0-aa65-4af8-bd17-00bd9344e575", 0, "2916b412-259b-4948-869d-7478051ae7f4", "admin@gmail.com", false, false, null, "admin@gmail.com", "admin", "AQAAAAIAAYagAAAAED9zi7my9KBYAOJ9qVNo/6imLw6r8eXRGs0/jUfG7lWAESujRs8jB2+OJ5plbVe/cA==", null, false, "", false, "admin" });
 
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
@@ -461,19 +449,19 @@ namespace API.Migrations
                 column: "QuestionID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_questionCompletes_SenComSentenceID",
-                table: "questionCompletes",
-                column: "SenComSentenceID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_questionCompletes_UserID",
                 table: "questionCompletes",
                 column: "UserID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_questions_sentencesSentenceId",
+                name: "IX_questionCompletes_sencomSentenceID",
+                table: "questionCompletes",
+                column: "sencomSentenceID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_questions_SentenceId",
                 table: "questions",
-                column: "sentencesSentenceId");
+                column: "SentenceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_sentenceCompletes_UserID",
