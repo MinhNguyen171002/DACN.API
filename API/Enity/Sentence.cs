@@ -11,6 +11,7 @@ namespace API.Enity
         public string? Description { get;set; }
         public virtual SentenceComplete sencom { get; set; }
         public virtual Exam? exam { get; set; }
+        public ICollection<QuestionComplete>? questionCompletes { get; set; }
         public virtual ICollection<Question>? questions { get; set; }
     }
 }

@@ -7,6 +7,7 @@ using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -34,7 +35,8 @@ builder.Services.AddCors(policy =>
     policy.AddPolicy("CorsPolicy", opt => opt
         .AllowAnyOrigin()
         .AllowAnyHeader()
-        .AllowAnyMethod());
+        .AllowAnyMethod()
+        .SetIsOriginAllowed((host) => true));
 });
 
 builder.Services.AddScoped<HttpClient>();
@@ -53,7 +55,6 @@ builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<ExamService>();
 builder.Services.AddTransient<QuestionService>();
 builder.Services.AddTransient<SentenceService>();
-builder.Services.AddTransient<QuestionComServices>();
 builder.Services.AddTransient<SentenceCompServices>();
 
 builder.Services.AddAuthentication(options =>
@@ -79,6 +80,12 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddSignalR();
 
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+          new[] { "application/octet-stream" });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -96,5 +103,6 @@ app.UseCors("CorsPolicy");
 app.MapControllers();
 
 app.MapHub<StreamingFile>("streaming-file");
+app.UseResponseCompression();
 
 app.Run();

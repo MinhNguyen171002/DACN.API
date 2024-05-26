@@ -7,12 +7,12 @@ namespace API.Enity
     {
         [Key]
         public string QuestionID { get; set; }
-        public int QuestionSerial { get; set; }
+        public int? QuestionSerial { get; set; }
         public string? QuestionChoose { get; set; }
         public bool? IsCorrect { get; set; }
         public virtual Question? test { get; set; }
         public virtual User? user { get; set; }
-        public virtual SentenceComplete? sencom { get; set; }
+        public virtual Sentence? sen { get; set; }
 
     }
 }

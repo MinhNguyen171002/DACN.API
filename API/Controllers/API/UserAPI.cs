@@ -2,6 +2,7 @@
 using API.Enity;
 using API.Model;
 using API.Model.DTO;
+using API.Model.GetDTO;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -24,7 +25,6 @@ namespace API.Controllers.API
         private readonly IConfiguration _configuration;
         UserService userService;
         SentenceCompServices sentenceCompService;
-        QuestionComServices questionComServices;
         private RoleManager<IdentityRole> _roleManager
         {
             get;
@@ -32,8 +32,7 @@ namespace API.Controllers.API
         public UserAPI(DB dBContext, UserService userService,
            RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> _userManager,
            SignInManager<IdentityUser> _signInManager, IConfiguration _configuration, 
-           SentenceCompServices sentenceCompService,
-            QuestionComServices questionComServices)
+           SentenceCompServices sentenceCompService)
         {
             this.dBContext = dBContext;
             this.userService = userService;
@@ -41,26 +40,14 @@ namespace API.Controllers.API
             this._userManager = _userManager;
             this._signInManager = _signInManager;
             this._configuration = _configuration;
-            this.questionComServices = questionComServices;
             this.sentenceCompService = sentenceCompService;
         }
         #region "questioncomplete"
         [HttpPost]
-        [Route("addquescom")]
-        public async Task<IActionResult> CreQuesCom([FromBody] QuestionComDTO ques)
+        [Route("submit")]
+        public async Task<IActionResult> Submit([FromBody] SubmitDTO submit ) 
         {
-            var status = await questionComServices.insert(ques);
-            if (status.Status.Equals(false))
-            {
-                return Ok(status);
-            }
-            return Ok(status);
-        }
-        [HttpPut]
-        [Route("updatequescom")]
-        public async Task<IActionResult> UpQuesCom([FromBody] QuestionComDTO ques)
-        {
-            var status = await questionComServices.update(ques);
+            var status = await sentenceCompService.submit(submit);
             if (status.Status.Equals(false))
             {
                 return Ok(status);
@@ -68,53 +55,31 @@ namespace API.Controllers.API
             return Ok(status);
         }
         [HttpDelete]
-        [Route("deletequescoms")]
-        public async Task<IActionResult> DelQuesComs([FromBody] QuestionComDTO ques)
+        [Route("repractice")]
+        public IActionResult rePractice([FromBody] BobDTO bob)
         {
-            var status = await questionComServices.deletes(ques);
+            var status = sentenceCompService.delete(bob);
             if (status.Status.Equals(false))
             {
                 return Ok(status);
             }
             return Ok(status);
         }
+
         [HttpGet]
         [Route("getquescom")]
-        public IActionResult ListQuesCom(string id,string userid)
+        public async Task<IActionResult> ListQuesCom(string id,string userid)
         {
-            return Ok(questionComServices.List(id,userid));
+            List<QuestionComGDTO> questions = await sentenceCompService.List(id, userid);
+            return Ok(questions);
         }
-        #endregion
-
-        #region "sentencecomplete"
-        [HttpPost]
-        [Route("addsencom")]
-        public async Task<IActionResult> CreSenCom([FromBody] SentenceComDTO sen)
-        {
-            var status = await sentenceCompService.insert(sen);
-            if (status.Status.Equals(false))
-            {
-                return Ok(status);
-            }
-            return Ok(status);
-        }
-        [HttpDelete]
-        [Route("deletesencom")]
-        public async Task<IActionResult> DelSenCom([FromBody] SentenceComDTO sen)
-        {
-            var status = await sentenceCompService.delete(sen);
-            if(status.Status.Equals(false))
-            {
-                return Ok(status);
-            }
-            return Ok(status);
-        }       
         [HttpGet]
         [Route("getsencom")]
-        public async Task<IActionResult> GetSenCom (string id,string userid)
+        public async Task<IActionResult> GetSenCom(string id, string userid)
         {
             return Ok(await sentenceCompService.getSenCom(id, userid));
         }
         #endregion
+
     }
 }

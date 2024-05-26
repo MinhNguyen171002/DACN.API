@@ -10,8 +10,6 @@ namespace API.Data
         {
             CreateMap<ExamDTO, Exam>().ReverseMap();
             CreateMap<SentenceDTO, Sentence>().ReverseMap();
-            CreateMap<QuestionDTO, Question>().ReverseMap();
-            CreateMap<QuestionComDTO, QuestionComplete>().ReverseMap();
             CreateMap<SentenceComDTO, SentenceComplete>().ReverseMap();
             CreateMap<FileDTO, QuestionFile>().ReverseMap();
         }              

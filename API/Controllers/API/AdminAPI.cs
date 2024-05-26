@@ -53,9 +53,9 @@ namespace API.Controllers.API
         }
         [HttpDelete]
         [Route("deletexam")]
-        public async Task<IActionResult> DelExam([FromBody] ExamDTO ex)
+        public async Task<IActionResult> DelExam([FromBody] BobDTO bob)
         {
-            var status = await examService.delete(ex);
+            var status = await examService.delete(bob);
             if (status.Status.Equals(false))
             { 
                 return Ok(status);                
@@ -95,9 +95,9 @@ namespace API.Controllers.API
         }
         [HttpDelete]
         [Route("delsquestion")]
-        public async Task<IActionResult> DelQuestion([FromBody] QuestionDTO ques)
+        public async Task<IActionResult> DelQuestion([FromBody] BobDTO bob)
         {
-            var status = await questionService.delete(ques);
+            var status = await questionService.delete(bob);
             if (status.Status.Equals(false))
             {
                 return Ok(status);
@@ -137,9 +137,9 @@ namespace API.Controllers.API
         }
         [HttpDelete]
         [Route("deletesentence")]
-        public async Task<IActionResult> DelSentence([FromBody] SentenceDTO sen)
+        public async Task<IActionResult> DelSentence([FromBody] BobDTO bob)
         {
-            var status = await sentenceService.delete(sen);
+            var status = await sentenceService.delete(bob);
             if (status.Status.Equals(false))
             {
                 return Ok(status);
@@ -148,15 +148,15 @@ namespace API.Controllers.API
         }
         [HttpGet]
         [Route("getsentences")]
-        public IActionResult ListSentence(int id,string name)
+        public IActionResult ListSentence(int id,string userId)
         {
-            return Ok(sentenceService.List(id,name));
+            return Ok(sentenceService.List(id, userId));
         }
         [HttpGet]
         [Route("getpractice")]
-        public IActionResult GetPratice(int id, string name)
+        public IActionResult GetPratice(int id, string userId)
         {
-            return Ok(sentenceService.getPractice(id,name));
+            return Ok(sentenceService.getPractice(id,userId));
         }
         #endregion
 

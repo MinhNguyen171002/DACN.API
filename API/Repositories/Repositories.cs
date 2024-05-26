@@ -91,7 +91,7 @@ namespace API.Repositories
         }
         public int? CorrectCount(object id, object user)
         {
-            return _dbContext.questionCompletes.Where(x=>x.sencom.SentenceID.Equals((string)id)
+            return _dbContext.questionCompletes.Where(x=>x.sen.SentenceId.Equals((string)id)
             &&x.user.UserID.Equals((string)user)
             &&x.IsCorrect.Equals(true)).Count();                
         }
@@ -128,10 +128,6 @@ namespace API.Repositories
         {
             return _dbContext.sentences.Where(x => x.exam.ExamID.Equals((int)id)).OrderBy(x=>x.SentenceSerial).ToList();
         }
-        public string getUserId(object user)
-        {
-            return _dbContext.users.Where(x => x.UserName.Equals((string)user)).Select(x => x.UserID).FirstOrDefault();
-        }
         public int Count(object id)
         {
             return _dbContext.sentences.Where(x => x.exam.ExamID.Equals((int)id)).Count();
@@ -142,15 +138,13 @@ namespace API.Repositories
         }
         public int? TestCorrect(object id, object user)
         {
-            string userId = getUserId((string)user);
             return _dbContext.sentenceCompletes.Where(x => x.SentenceID
             .Equals(_dbContext.sentences.Where(x => x.exam.ExamID.Equals((int)id)).Select(x => x.SentenceId).FirstOrDefault())
-            && x.Status.Equals(true) && x.user.UserID.Equals(userId)).Count();
+            && x.Status.Equals(true) && x.user.UserID.Equals(user)).Count();
         }
         public decimal CorrectPercent(object id, object user) {
-            string userId = getUserId((string)user);
             int? sentence = _dbContext.sentenceCompletes.Where(x => x.SentenceID.Equals(id)
-            && x.user.UserID.Equals(userId)).Select(x => x.CorrectQuestion).FirstOrDefault();
+            && x.user.UserID.Equals(user)).Select(x => x.CorrectQuestion).FirstOrDefault();
             if (sentence == null)
             {
                 return (decimal)0.0;
@@ -159,9 +153,8 @@ namespace API.Repositories
         }
         public int? CorrectQuestion(object id, object user)
         {
-            string userId = getUserId((string)user);
             return _dbContext.sentenceCompletes.Where(x => x.SentenceID.Equals(id)
-            && x.user.UserID.Equals(userId)).Select(x => x.CorrectQuestion).FirstOrDefault();
+            && x.user.UserID.Equals(user)).Select(x => x.CorrectQuestion).FirstOrDefault();
         }
     }
     #endregion
@@ -173,9 +166,8 @@ namespace API.Repositories
         public List<QuestionComplete> list(object id, object userid);
         //public string getdescription(object id);
         public string getcorrectanswer(object id);
-        public int CountCorrect(object id);
         public User user (object id);
-        public SentenceComplete sentence(object id);
+        public Sentence sentence(object id);
     }
     public class QuestionCompleteRepository : RepositoryBase<QuestionComplete>, IQuestionCompleteRepositories
     {
@@ -187,9 +179,9 @@ namespace API.Repositories
         {
             return _dbContext.users.Find(id);
         }
-        public SentenceComplete sentence(object id)
+        public Sentence sentence(object id)
         {
-            return _dbContext.sentenceCompletes.Find(id);
+            return _dbContext.sentences.Find(id);
         }
         public QuestionComplete getbyuser(object id, object userid)
         {
@@ -205,13 +197,9 @@ namespace API.Repositories
             return _dbContext.questions.Where(x => x.QuestionID.Equals(id))
                 .Select(x => x.CorrectAnswer).FirstOrDefault();
         }
-        public int CountCorrect (object id)
-        {
-            return _dbContext.questionCompletes.Where(x => x.sencom.Equals(id) && x.IsCorrect.Equals(true)).Count();
-        }
         public List<QuestionComplete> list(object id,object userid)
         {
-            return _dbContext.questionCompletes.Where(x => x.user.UserID.Equals(userid) &&x.sencom.SentenceID.Equals(id)).OrderBy(x => x.QuestionSerial).ToList();
+            return _dbContext.questionCompletes.Where(x => x.user.UserID.Equals(userid) &&x.sen.SentenceId.Equals(id)).OrderBy(x => x.QuestionSerial).ToList();
         }
     }
     #endregion

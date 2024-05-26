@@ -36,9 +36,9 @@ namespace API.DBContext
                 .WithOne(c => c.sentence)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            builder.Entity<SentenceComplete>()
-                .HasMany(c => c.QuestionCompletes)
-                .WithOne(c => c.sencom)
+            builder.Entity<Sentence>()
+                .HasMany(c => c.questionCompletes)
+                .WithOne(c => c.sen)
                 .OnDelete(DeleteBehavior.SetNull);
 
             builder.Entity<Question>()
