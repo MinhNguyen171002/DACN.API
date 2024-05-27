@@ -16,16 +16,18 @@ namespace API.Controllers.API
         QuestionService questionService;
         SentenceService sentenceService;
         FileService fileService;
+        CloudService cloudService;
         public AdminAPI(DB dBContext,ExamService examService, 
             QuestionService questionService,
             SentenceService sentenceService,
-            FileService fileService)
+            FileService fileService,CloudService cloudService)
         {
             this.dBContext = dBContext;
             this.examService = examService;
             this.questionService = questionService;
             this.sentenceService = sentenceService;
             this.fileService = fileService;
+            this.cloudService = cloudService;
         }
     
         #region "exam"
@@ -174,6 +176,12 @@ namespace API.Controllers.API
                 var fileData = memoryStream.ToArray();
                 return Ok(await fileService.insert(fileData, file.FileData.FileName, file.Question, file.UserID,file.fileType));
             }
+        }
+        [HttpPost]
+        [Route("cloudfile")]
+        public async Task<IActionResult> cloudFile(IFormFile file)
+        {
+           return Ok(await cloudService.upload(file));
         }
         [HttpDelete]
         [Route("delfile")]

@@ -1,16 +1,18 @@
-﻿using API.DBContext;
+﻿using API.Data.Helpers;
+using API.DBContext;
 using API.Enity;
 using API.Model.DTO;
 using API.Model.GetDTO;
 using API.Repositories;
 using AutoMapper;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Model;
-using System.Collections.Immutable;
+using System.IO;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace API.Services
 {
@@ -539,6 +541,39 @@ namespace API.Services
             }
             return new Response { Status = false, Message = "File not found!!!" };
         }
+    }
+    #endregion
+
+    #region "Cloud"
+    public class CloudService
+    {
+        public IConfiguration configuration { get; }
+        private CloudinarySettings cloudinarySetting;
+        private Cloudinary _cloudinary;
+        public CloudService(IConfiguration configuration) 
+        {
+            this.configuration = configuration;
+            cloudinarySetting = configuration.GetSection("CloudinarySettings").Get<CloudinarySettings>();
+            Account acc = new Account
+                (
+                    cloudinarySetting.CloudName,
+                    cloudinarySetting.ApiKey,
+                    cloudinarySetting.ApiSecret
+                );
+            _cloudinary = new Cloudinary (acc);
+        }
+        public async Task<VideoUploadResult> upload(IFormFile file)
+        {
+            VideoUploadResult result = new VideoUploadResult();
+            var uploadparam = new VideoUploadParams
+            {
+                File = new FileDescription(file.FileName,file.OpenReadStream()),
+                Folder = "ENGL"
+            };
+            result = await _cloudinary.UploadAsync(uploadparam);
+            return result;
+        }
+
     }
     #endregion
 }

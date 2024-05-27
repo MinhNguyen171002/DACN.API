@@ -5,12 +5,12 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace API.Data
+namespace API.Data.Interface
 {
     public interface IRepository<T> where T : class
     {
         void Add(T entity);
-        void AddRange (IEnumerable<T> entities);
+        void AddRange(IEnumerable<T> entities);
 
         void DeleteRange(IEnumerable<T> entities);
         void Update(T entity);

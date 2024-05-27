@@ -1,5 +1,5 @@
 using API.Controllers.ServerHub;
-using API.Data;
+using API.Data.Helpers;
 using API.DBContext;
 using API.Enity;
 using API.Repositories;
@@ -56,6 +56,7 @@ builder.Services.AddTransient<ExamService>();
 builder.Services.AddTransient<QuestionService>();
 builder.Services.AddTransient<SentenceService>();
 builder.Services.AddTransient<SentenceCompServices>();
+builder.Services.AddTransient<CloudService>();
 
 builder.Services.AddAuthentication(options =>
 {
