@@ -367,7 +367,7 @@ namespace API.Services
                         QuestionSerial = question.QuestionSerial,
                         QuestionChoose = question.QuestionChoose,
                         IsCorrect = question.IsCorrect,
-                        //CorrectDescription = quescomRepositories.getdescription(question.QuestionID),
+                        CorrectDescription = Encoding.UTF8.GetString(questionCompleteRepositories.getdescription(question.QuestionID)),
                         CorrectAnswer = questionCompleteRepositories.getcorrectanswer(question.QuestionID),
                     });
                 }

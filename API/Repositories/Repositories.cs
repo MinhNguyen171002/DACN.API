@@ -164,7 +164,7 @@ namespace API.Repositories
     {
         public QuestionComplete getbyuser(object id,object userid);
         public List<QuestionComplete> list(object id, object userid);
-        //public string getdescription(object id);
+        public byte[] getdescription(object id);
         public string getcorrectanswer(object id);
         public User user (object id);
         public Sentence sentence(object id);
@@ -187,11 +187,11 @@ namespace API.Repositories
         {
             return _dbContext.questionCompletes.Where(x=>x.QuestionID.Equals(id)&&x.user.UserID.Equals(userid)).FirstOrDefault();
         }
-/*        public string getdescription (object id)
+        public byte[] getdescription(object id)
         {
-            return _dbContext.questions.Where(x => x.QuestionID.Equals(id))
-                .Select(x => x.CorrectDescription).FirstOrDefault();
-        }*/
+            return _dbContext.files.Where(x => x.ques.QuestionID.Equals(id))
+                .Select(x => x.FileData).FirstOrDefault();
+        }
         public string getcorrectanswer(object id)
         {
             return _dbContext.questions.Where(x => x.QuestionID.Equals(id))

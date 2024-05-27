@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(DB))]
-    [Migration("20240523164323_01")]
-    partial class _01
+    [Migration("20240525134952_02")]
+    partial class _02
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -94,20 +94,20 @@ namespace API.Migrations
                     b.Property<string>("QuestionChoose")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("QuestionSerial")
+                    b.Property<int?>("QuestionSerial")
                         .HasColumnType("int");
+
+                    b.Property<string>("SentenceId")
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("UserID")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("sencomSentenceID")
-                        .HasColumnType("varchar(255)");
-
                     b.HasKey("QuestionID");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("SentenceId");
 
-                    b.HasIndex("sencomSentenceID");
+                    b.HasIndex("UserID");
 
                     b.ToTable("questionCompletes");
                 });
@@ -331,13 +331,13 @@ namespace API.Migrations
                         {
                             Id = "a18be9c0-aa65-4af8-bd17-00bd9344e575",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "2916b412-259b-4948-869d-7478051ae7f4",
+                            ConcurrencyStamp = "79f2bf13-43d4-4184-89e4-a5cd15987245",
                             Email = "admin@gmail.com",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
                             NormalizedEmail = "admin@gmail.com",
                             NormalizedUserName = "admin",
-                            PasswordHash = "AQAAAAIAAYagAAAAED9zi7my9KBYAOJ9qVNo/6imLw6r8eXRGs0/jUfG7lWAESujRs8jB2+OJ5plbVe/cA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEF2KRzo9EPxu97m7shv+DHzFS8QgYdXhDcwX4wvKdS8d/lwJw0TpJBn5/nuY2znuLg==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             TwoFactorEnabled = false,
@@ -451,17 +451,17 @@ namespace API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("API.Enity.Sentence", "sen")
+                        .WithMany("questionCompletes")
+                        .HasForeignKey("SentenceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("API.Enity.User", "user")
                         .WithMany("quescoms")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("API.Enity.SentenceComplete", "sencom")
-                        .WithMany("QuestionCompletes")
-                        .HasForeignKey("sencomSentenceID")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("sencom");
+                    b.Navigation("sen");
 
                     b.Navigation("test");
 
@@ -583,15 +583,12 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Enity.Sentence", b =>
                 {
+                    b.Navigation("questionCompletes");
+
                     b.Navigation("questions");
 
                     b.Navigation("sencom")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("API.Enity.SentenceComplete", b =>
-                {
-                    b.Navigation("QuestionCompletes");
                 });
 
             modelBuilder.Entity("API.Enity.User", b =>

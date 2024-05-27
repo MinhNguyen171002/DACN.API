@@ -4,6 +4,7 @@ using API.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(DB))]
-    partial class DBModelSnapshot : ModelSnapshot
+    [Migration("20240525074720_01")]
+    partial class _01
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -94,17 +97,17 @@ namespace API.Migrations
                     b.Property<int?>("QuestionSerial")
                         .HasColumnType("int");
 
-                    b.Property<string>("SentenceId")
+                    b.Property<string>("UserID")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("UserID")
+                    b.Property<string>("sencomSentenceID")
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("QuestionID");
 
-                    b.HasIndex("SentenceId");
-
                     b.HasIndex("UserID");
+
+                    b.HasIndex("sencomSentenceID");
 
                     b.ToTable("questionCompletes");
                 });
@@ -328,13 +331,13 @@ namespace API.Migrations
                         {
                             Id = "a18be9c0-aa65-4af8-bd17-00bd9344e575",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "79f2bf13-43d4-4184-89e4-a5cd15987245",
+                            ConcurrencyStamp = "476a7139-1858-4c3e-94a8-d9ad788a2995",
                             Email = "admin@gmail.com",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
                             NormalizedEmail = "admin@gmail.com",
                             NormalizedUserName = "admin",
-                            PasswordHash = "AQAAAAIAAYagAAAAEF2KRzo9EPxu97m7shv+DHzFS8QgYdXhDcwX4wvKdS8d/lwJw0TpJBn5/nuY2znuLg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEzMwsRZoLhI0C9gXrQTIeeg4owQrslxo1A5+7oiRjYIJSUWF3iVftpypks/IRbnMA==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             TwoFactorEnabled = false,
@@ -448,17 +451,17 @@ namespace API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("API.Enity.Sentence", "sen")
-                        .WithMany("questionCompletes")
-                        .HasForeignKey("SentenceId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("API.Enity.User", "user")
                         .WithMany("quescoms")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.Navigation("sen");
+                    b.HasOne("API.Enity.SentenceComplete", "sencom")
+                        .WithMany("QuestionCompletes")
+                        .HasForeignKey("sencomSentenceID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("sencom");
 
                     b.Navigation("test");
 
@@ -580,12 +583,15 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Enity.Sentence", b =>
                 {
-                    b.Navigation("questionCompletes");
-
                     b.Navigation("questions");
 
                     b.Navigation("sencom")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("API.Enity.SentenceComplete", b =>
+                {
+                    b.Navigation("QuestionCompletes");
                 });
 
             modelBuilder.Entity("API.Enity.User", b =>
