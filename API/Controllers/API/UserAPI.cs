@@ -19,30 +19,65 @@ namespace API.Controllers.API
     [ApiController]
     public class UserAPI : Controller
     {
-        private DB dBContext;
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly IConfiguration _configuration;
+        ExamService examService;
         UserService userService;
         SentenceCompServices sentenceCompService;
-        private RoleManager<IdentityRole> _roleManager
+        QuestionService questionService;
+        SentenceService sentenceService;
+        public UserAPI(UserService userService,            
+           SentenceCompServices sentenceCompService, QuestionService questionService,
+            SentenceService sentenceService, ExamService examService)
         {
-            get;
-        }
-        public UserAPI(DB dBContext, UserService userService,
-           RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> _userManager,
-           SignInManager<IdentityUser> _signInManager, IConfiguration _configuration, 
-           SentenceCompServices sentenceCompService)
-        {
-            this.dBContext = dBContext;
             this.userService = userService;
-            this._roleManager = roleManager;
-            this._userManager = _userManager;
-            this._signInManager = _signInManager;
-            this._configuration = _configuration;
             this.sentenceCompService = sentenceCompService;
+            this.questionService = questionService;
+            this.sentenceService = sentenceService;
+            this.examService = examService;
         }
+        #region "userinfo"
+        [HttpGet]
+        [Route("userinfo")]
+        public IActionResult getUser(string id)
+        {
+            UserGDTO user = userService.GetUser(id);
+            return Ok(user);
+        }
+        [HttpGet]
+        [Route("getexams")]
+        public IActionResult ListExam()
+        {
+            return Ok(examService.List());
+        }
+        #endregion
         #region "questioncomplete"
+        [HttpGet]
+        [Route("allQues")]
+        public IActionResult Listall()
+        {
+            List<QuestionGDTO> questions = questionService.ListAll();
+            return Ok(questions);
+        }
+        [HttpGet]
+        [Route("getquestions")]
+        public IActionResult ListQuestion(string id)
+        {
+            List<QuestionGDTO> questions = questionService.List(id);
+            return Ok(questions);
+        }
+        [HttpGet]
+        [Route("getsentences")]
+        public IActionResult ListSentence(string id, string userId)
+        {
+            List<UserSentenceDTO> sentences = sentenceService.List(id, userId);
+            return Ok(sentences);
+        }
+        [HttpGet]
+        [Route("getpractice")]
+        public IActionResult GetPratice(string id, string userId)
+        {
+            PracticeDTO practice = sentenceService.getPractice(id, userId);
+            return Ok(practice);
+        }
         [HttpPost]
         [Route("submit")]
         public async Task<IActionResult> Submit([FromBody] SubmitDTO submit ) 

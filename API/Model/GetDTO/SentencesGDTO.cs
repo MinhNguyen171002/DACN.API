@@ -1,11 +1,9 @@
-﻿namespace API.Model.DTO
+﻿namespace API.Model.GetDTO
 {
-    public class SentenceDTO
+    public class SentencesGDTO
     {
-        public string? UserID { get; set; }
         public string? SentenceId { get; set; }
         public int? SentenceSerial { get; set; }
-        public string? ExamId { get; set; }
         public string? Description { get; set; }
     }
 }

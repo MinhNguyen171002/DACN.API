@@ -13,7 +13,6 @@ namespace Model
     {
         [Required]
         public string UserName { get; set; }
-
         public string SDT { get; set; }
         [Required, DataType(DataType.EmailAddress)]
         public string Email { get; set; }

@@ -11,7 +11,6 @@ namespace API.Data.Helpers
             CreateMap<ExamDTO, Exam>().ReverseMap();
             CreateMap<SentenceDTO, Sentence>().ReverseMap();
             CreateMap<SentenceComDTO, SentenceComplete>().ReverseMap();
-            CreateMap<FileDTO, QuestionFile>().ReverseMap();
         }
     }
 }

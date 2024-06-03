@@ -11,7 +11,6 @@ namespace API.DBContext
     {
         public DbSet<User> users { get; set; }
         public DbSet<Question> questions { get; set; }
-        public DbSet<QuestionFile> files { get; set; }
         public DbSet<Exam> exams { get; set; }
         public DbSet<SentenceComplete> sentenceCompletes { get; set; }
         public DbSet<QuestionComplete> questionCompletes { get; set; }
@@ -46,11 +45,6 @@ namespace API.DBContext
                 .WithMany(c => c.questions)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            builder.Entity<Question>()
-                .HasMany(c => c.files)
-                .WithOne(c => c.ques)
-                .OnDelete(DeleteBehavior.SetNull);
-
             builder.Entity<SentenceComplete>()
                 .HasOne(c => c.user)
                 .WithMany(c => c.sencoms).OnDelete(DeleteBehavior.SetNull);
@@ -58,7 +52,6 @@ namespace API.DBContext
             builder.Entity<QuestionComplete>()
                 .HasOne(c => c.user)
                 .WithMany(c => c.quescoms).OnDelete(DeleteBehavior.SetNull);
-
 
             builder.Entity<QuestionComplete>()
                 .HasOne(c => c.test)

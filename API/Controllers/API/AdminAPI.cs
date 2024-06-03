@@ -2,6 +2,7 @@
 using API.Enity;
 using API.Model;
 using API.Model.DTO;
+using API.Model.GetDTO;
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,25 +12,28 @@ namespace API.Controllers.API
     [ApiController]
     public class AdminAPI : Controller
     {
-        private DB dBContext;
+        UserService userService;
         ExamService examService;
         QuestionService questionService;
         SentenceService sentenceService;
-        FileService fileService;
-        CloudService cloudService;
-        public AdminAPI(DB dBContext,ExamService examService, 
+        public AdminAPI(ExamService examService, 
             QuestionService questionService,
             SentenceService sentenceService,
-            FileService fileService,CloudService cloudService)
+            UserService userService)
         {
-            this.dBContext = dBContext;
             this.examService = examService;
             this.questionService = questionService;
             this.sentenceService = sentenceService;
-            this.fileService = fileService;
-            this.cloudService = cloudService;
+            this.userService = userService;
         }
-    
+
+        [HttpGet]
+        [Route("getUsers")]
+        public IActionResult ListUsers()
+        {
+            List<UserGDTO> user = userService.GetUsers();
+            return Ok(user);
+        }
         #region "exam"
         [HttpPost]
         [Route("addexam")]
@@ -66,18 +70,18 @@ namespace API.Controllers.API
         }
         [HttpGet]
         [Route("getexams")]
-        public IActionResult ListExam(string skill)
+        public IActionResult ListExam()
         {
-            return Ok(examService.List(skill));
+            return Ok(examService.List());
         }
         #endregion
 
         #region "question"
         [HttpPost]
         [Route("addquestion")]
-        public async Task<IActionResult> CreQuestion([FromBody] QuestionFDTO fDTO)
+        public async Task<IActionResult> CreQuestion([FromForm] QuestionFDTO fDTO)
         {
-            var status = await questionService.insert(fDTO);
+            var status = await questionService.upload(fDTO);
             if (status.Status.Equals(false))
             {
                 return Ok(status);
@@ -107,10 +111,11 @@ namespace API.Controllers.API
             return Ok(status);
         }
         [HttpGet]
-        [Route("getquestions")]
-        public IActionResult ListQuestion(string id)
+        [Route("allQues")]
+        public IActionResult Listall()
         {
-            return Ok(questionService.List(id));
+            List<QuestionGDTO> questions = questionService.ListAll();
+            return Ok(questions);
         }
         #endregion
 
@@ -149,50 +154,11 @@ namespace API.Controllers.API
             return Ok(status);
         }
         [HttpGet]
-        [Route("getsentences")]
-        public IActionResult ListSentence(int id,string userId)
+        [Route("allSentences")]
+        public IActionResult ListSen()
         {
-            return Ok(sentenceService.List(id, userId));
-        }
-        [HttpGet]
-        [Route("getpractice")]
-        public IActionResult GetPratice(int id, string userId)
-        {
-            return Ok(sentenceService.getPractice(id,userId));
-        }
-        #endregion
-
-        #region"file"
-        [HttpPost]
-        [Route("postfile")]
-        public async Task<IActionResult> postFile([FromForm]FileDTO file)
-        {
-            if (file.FileData == null || file.FileData.Length == 0)
-                return BadRequest("File is empty");
-
-            using (var memoryStream = new MemoryStream())
-            {
-                await file.FileData.CopyToAsync(memoryStream);
-                var fileData = memoryStream.ToArray();
-                return Ok(await fileService.insert(fileData, file.FileData.FileName, file.Question, file.UserID,file.fileType));
-            }
-        }
-        [HttpPost]
-        [Route("cloudfile")]
-        public async Task<IActionResult> cloudFile(IFormFile file)
-        {
-           return Ok(await cloudService.upload(file));
-        }
-        [HttpDelete]
-        [Route("delfile")]
-        public async Task<IActionResult> delFile([FromBody] FileDTO file)
-        {
-            var status = await fileService.delete(file);
-            if (status.Status.Equals(false))
-            {
-                return Ok(status);
-            }
-            return Ok(status);
+            List<SentencesGDTO> sentences = sentenceService.ListAll();
+            return Ok(sentences);
         }
         #endregion
     }

@@ -83,6 +83,10 @@ namespace API.Controllers.API
         public async Task<IActionResult> SignIn([FromBody] LoginModel login)
         {
             var user = await _userManager.FindByNameAsync(login.Username);
+            if (user == null)
+            {
+                user = await _userManager.FindByEmailAsync(login.Username);
+            }
             if (user != null && await _userManager.CheckPasswordAsync(user, login.Password) && (await _signInManager.PasswordSignInAsync(user, login.Password, false, false)).Succeeded)
             {
                 var userRoles = await _userManager.GetRolesAsync(user);

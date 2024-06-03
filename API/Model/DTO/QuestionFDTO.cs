@@ -16,7 +16,7 @@
     public class QuestionFDTO
     {
         public string? UserID { get; set; }
-        public string? FilePath { get; set; }
         public string? SentenceID { get; set; }
+        public List<IFormFile> files { get; set; }
     }
 }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(DB))]
-    [Migration("20240525134952_02")]
-    partial class _02
+    [Migration("20240601162316_01")]
+    partial class _01
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,17 +27,20 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Enity.Exam", b =>
                 {
-                    b.Property<int>("ExamID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ExamID"));
+                    b.Property<string>("ExamID")
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("ExamDescription")
                         .HasColumnType("longtext");
 
                     b.Property<TimeSpan>("ExamDuration")
                         .HasColumnType("time(6)");
+
+                    b.Property<int?>("ExamSerial")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Part")
+                        .HasColumnType("int");
 
                     b.Property<string>("Skill")
                         .HasColumnType("longtext");
@@ -67,6 +70,9 @@ namespace API.Migrations
                     b.Property<string>("CorrectAnswer")
                         .HasColumnType("longtext");
 
+                    b.Property<string>("CorrectDescription")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("QuestionContext")
                         .HasColumnType("longtext");
 
@@ -75,6 +81,12 @@ namespace API.Migrations
 
                     b.Property<string>("SentenceId")
                         .HasColumnType("varchar(255)");
+
+                    b.Property<string>("UrlAudio")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("UrlImage")
+                        .HasColumnType("longtext");
 
                     b.HasKey("QuestionID");
 
@@ -112,31 +124,6 @@ namespace API.Migrations
                     b.ToTable("questionCompletes");
                 });
 
-            modelBuilder.Entity("API.Enity.QuestionFile", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<byte[]>("FileData")
-                        .IsRequired()
-                        .HasColumnType("longblob");
-
-                    b.Property<string>("FileName")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("FileType")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("QuestionID")
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("QuestionID");
-
-                    b.ToTable("files");
-                });
-
             modelBuilder.Entity("API.Enity.Sentence", b =>
                 {
                     b.Property<string>("SentenceId")
@@ -145,8 +132,8 @@ namespace API.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("longtext");
 
-                    b.Property<int?>("ExamID")
-                        .HasColumnType("int");
+                    b.Property<string>("ExamID")
+                        .HasColumnType("varchar(255)");
 
                     b.Property<int?>("SentenceSerial")
                         .HasColumnType("int");
@@ -331,13 +318,13 @@ namespace API.Migrations
                         {
                             Id = "a18be9c0-aa65-4af8-bd17-00bd9344e575",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "79f2bf13-43d4-4184-89e4-a5cd15987245",
+                            ConcurrencyStamp = "ae2e45fb-3cb7-4fba-8b17-6d3841d877eb",
                             Email = "admin@gmail.com",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
                             NormalizedEmail = "admin@gmail.com",
                             NormalizedUserName = "admin",
-                            PasswordHash = "AQAAAAIAAYagAAAAEF2KRzo9EPxu97m7shv+DHzFS8QgYdXhDcwX4wvKdS8d/lwJw0TpJBn5/nuY2znuLg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEMWrYvevK4Aup1dsXqrSnCRKgFtWFbcrPIjj2LjsuFdaJRyZtqZK7x8MKngwLmnU4Q==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             TwoFactorEnabled = false,
@@ -468,16 +455,6 @@ namespace API.Migrations
                     b.Navigation("user");
                 });
 
-            modelBuilder.Entity("API.Enity.QuestionFile", b =>
-                {
-                    b.HasOne("API.Enity.Question", "ques")
-                        .WithMany("files")
-                        .HasForeignKey("QuestionID")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("ques");
-                });
-
             modelBuilder.Entity("API.Enity.Sentence", b =>
                 {
                     b.HasOne("API.Enity.Exam", "exam")
@@ -575,8 +552,6 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Enity.Question", b =>
                 {
-                    b.Navigation("files");
-
                     b.Navigation("quescom")
                         .IsRequired();
                 });
@@ -587,8 +562,7 @@ namespace API.Migrations
 
                     b.Navigation("questions");
 
-                    b.Navigation("sencom")
-                        .IsRequired();
+                    b.Navigation("sencom");
                 });
 
             modelBuilder.Entity("API.Enity.User", b =>

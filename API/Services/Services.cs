@@ -8,11 +8,14 @@ using AutoMapper;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Model;
+using System.Collections;
 using System.IO;
 using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace API.Services
 {
@@ -47,6 +50,41 @@ namespace API.Services
             userRepositories.Delete(user);
             Save();
         }
+        public UserGDTO GetUser(string id)
+        {
+            User user = userRepositories.GetUser(id);
+            if (user!=null) 
+            {
+                UserGDTO gDTO = new UserGDTO()
+                {
+                    UserName = user.UserName,
+                    UserEmail = user.Email,
+                    UserPhone = user.SDT
+                };
+                return gDTO;
+            }
+            return new UserGDTO { UserEmail = null, UserName = null, UserPhone = null};
+        }
+        public List<UserGDTO> GetUsers()
+        {
+            List<User> users = userRepositories.GetList().ToList();
+            if (users != null)
+            {
+                List<UserGDTO> gDTOs = new List<UserGDTO>();
+                foreach (User user in users)
+                {
+                    gDTOs.Add(new UserGDTO() {
+                        UserEmail = user.Email,
+                        UserName = user.UserName,
+                        UserPhone = user.SDT
+                    });
+
+                }
+                
+                return gDTOs;
+            }
+            return Enumerable.Empty<UserGDTO>().ToList();
+        }
     }
     #endregion  
 
@@ -79,6 +117,7 @@ namespace API.Services
                 if (exam == null)
                 {
                     Exam exam1 = _mapper.Map<Exam>(ex);
+                    exam1.ExamID = Guid.NewGuid().ToString();
                     examRepositories.Add(exam1);
                     Save();
                     return new Response { Status = true, Message = "Success" };
@@ -96,6 +135,8 @@ namespace API.Services
                 Exam exam = examRepositories.GetById(ex.ExamID);
                 if (exam != null)
                 {
+                    exam.ExamSerial = ex.ExamSerial;
+                    exam.Part = ex.Part;
                     exam.ExamDescription = ex.ExamDescription;
                     exam.ExamDuration = ex.ExamDuration;
                     exam.Skill = ex.Skill;
@@ -124,10 +165,10 @@ namespace API.Services
             }
             return new Response { Status = false, Message = "Need authencation" };
         }
-        public List<ExamGDTO> List(string skill)
+        public List<ExamGDTO> List()
         {
-            var exams = examRepositories.Listall(skill);
-            List<ExamGDTO> examDTOs = new List<ExamGDTO>(exams.Capacity);
+            var exams = examRepositories.Listall();
+            List<ExamGDTO> examDTOs = new List<ExamGDTO>();
             if (!exams.IsNullOrEmpty())
             {
                 foreach (var exam in exams)
@@ -135,6 +176,8 @@ namespace API.Services
                     examDTOs.Add(new ExamGDTO
                     {
                         ExamID = exam.ExamID,
+                        ExamSerial = exam.ExamSerial,
+                        Part = exam.Part,
                         ExamDuration = exam.ExamDuration,
                         ExamDescription = exam.ExamDescription,
                         Skill = exam.Skill,
@@ -154,53 +197,123 @@ namespace API.Services
         private DB dBContext;
         private readonly UserManager<IdentityUser> _userManager;
         private IQuestionRepositories questionRepositories;
-        public QuestionService(DB dBContext, UserManager<IdentityUser> _userManager)
+
+        public IConfiguration configuration { get; }
+        private CloudinarySettings cloudinarySetting;
+        private Cloudinary _cloudinary;
+        public QuestionService(DB dBContext, UserManager<IdentityUser> _userManager, IConfiguration configuration)
         {
             this.dBContext = dBContext;
             this.questionRepositories = new QuestionRepository(dBContext);
             this._userManager = _userManager;
+            this.configuration = configuration;
+            cloudinarySetting = configuration.GetSection("CloudinarySettings").Get<CloudinarySettings>();
+            Account acc = new Account
+                (
+                    cloudinarySetting.CloudName,
+                    cloudinarySetting.ApiKey,
+                    cloudinarySetting.ApiSecret
+                );
+            _cloudinary = new Cloudinary(acc);
         }
         public void Save()
         {
             dBContext.SaveChanges();
         }
-        public async Task<Response> insert(QuestionFDTO ques)
+      
+        public async Task<Response> upload(QuestionFDTO ques)
         {
             var user = await _userManager.FindByIdAsync(ques.UserID);
             var roles = await _userManager.GetRolesAsync(user);
-            Sentence sentence = questionRepositories.sentence(ques.SentenceID);
             if (roles.FirstOrDefault() == "admin")
             {
-                string filePath = ques.FilePath.ToString();
-                try
+                List<string> ImageUrl = new List<string>(), AudioUrl = new List<string>();
+                foreach (IFormFile file in ques.files)
                 {
-                    string[] lines = File.ReadAllLines(filePath,Encoding.UTF8);
-
-                    List<Question> questions = new List<Question>(lines.Length);
-                    foreach (string line in lines)
+                    string type = file.ContentType;
+                    switch (type)
                     {
-                        string[] quesDTO = line.Split('/');
-                        questions.Add(new Question()
-                        {
-                            QuestionID = Guid.NewGuid().ToString(),
-                            QuestionSerial = int.Parse(quesDTO[0]),
-                            QuestionContext = quesDTO[1],
-                            Answer1 = quesDTO[2],
-                            Answer2 = quesDTO[3],
-                            Answer3 = quesDTO[4],
-                            Answer4 = quesDTO[5],
-                            CorrectAnswer = quesDTO[6],
-                            sentence = sentence,
-                        });
+                        case ("image/png"):
+                            ImageUploadResult Imageresult = new ImageUploadResult();
+                            ImageUploadParams uploadparam = new ImageUploadParams
+                            {
+                                File = new FileDescription(file.FileName, file.OpenReadStream()),
+                                Folder = "ENGL"
+                            };
+                            Imageresult = await _cloudinary.UploadAsync(uploadparam);
+                            ImageUrl.Add(Imageresult.Uri.ToString());
+                            break;
+                        case ("audio/mpeg"):
+                            VideoUploadResult result = new VideoUploadResult();
+                            VideoUploadParams uploadParam = new VideoUploadParams
+                            {
+                                File = new FileDescription(file.Name, file.OpenReadStream()),
+                                Folder = "ENGL"
+                            };
+                            result = await _cloudinary.UploadAsync(uploadParam);
+                            AudioUrl.Add(result.Uri.ToString());
+                            break;
+                        case ("text/plain"):
+                            Sentence sentence = questionRepositories.sentence(ques.SentenceID);
+                            using (var memoryStream = new MemoryStream())
+                            {
+                                await file.CopyToAsync(memoryStream);
+                                byte[]? fileData = memoryStream.ToArray();
+                                List<string> lines = Encoding.Default.GetString(fileData).Split('\\').ToList();
+                                List<Question> questions = new List<Question>();
+                                if (ImageUrl.Any() || AudioUrl.Any())
+                                {
+                                    for (int i = 0; i < lines.Capacity; i++)
+                                    {
+                                        List<string> parts = lines[i].Split('/').ToList();
+                                        int serial = int.Parse(parts[0]);
+                                        Question question = new Question()
+                                        {
+                                            QuestionID = Guid.NewGuid().ToString(),
+                                            QuestionSerial = serial,
+                                            QuestionContext = parts[1],
+                                            UrlImage = ImageUrl[i],
+                                            UrlAudio = AudioUrl[i],
+                                            Answer1 = parts[2],
+                                            Answer2 = parts[3],
+                                            Answer3 = parts[4],
+                                            Answer4 = parts[5],
+                                            CorrectAnswer = parts[6],
+                                            CorrectDescription = parts[7].Trim(),
+                                            sentence = sentence,
+                                        };
+                                        questions.Add(question);
+                                    }
+                                    questionRepositories.AddRange(questions);
+                                    Save();
+                                    break;
+                                }
+                                foreach (string line in lines)
+                                {
+                                    List<string> parts = line.Split('/').ToList();
+                                    int serial = int.Parse(parts[0]);
+                                    Question question = new Question()
+                                    {
+                                        QuestionID = Guid.NewGuid().ToString(),
+                                        QuestionSerial = serial,
+                                        QuestionContext = parts[1],
+                                        Answer1 = parts[2],
+                                        Answer2 = parts[3],
+                                        Answer3 = parts[4],
+                                        Answer4 = parts[5],
+                                        CorrectAnswer = parts[6],
+                                        CorrectDescription = parts[7].Trim(),
+                                        sentence = sentence,
+                                    };
+                                    questions.Add(question);
+                                }
+                                questionRepositories.AddRange(questions);
+                                Save();
+                                break;
+                            }
                     }
-                    questionRepositories.AddRange(questions);
-                    Save();
-                    return new Response { Status = true, Message = "Success" };
                 }
-                catch (Exception ex)
-                {
-                    return new Response { Status = false, Message = "An error occurred: " + ex.Message };
-                }
+                return new Response { Status = true , Message = "Success" };
             }
             return new Response { Status = false, Message = "Need authencation" };
         }
@@ -218,7 +331,7 @@ namespace API.Services
                     question.Answer1 = ques.Answer2;
                     question.Answer3 = ques.Answer3;
                     question.Answer4 = ques.Answer4;
-                    question.QuestionContext = ques.QuestionContext;
+                    question.QuestionContext = ques.QuestionContext;                             
                     question.CorrectAnswer = ques.CorrectAnswer;
                     questionRepositories.Update(question);
                     Save();
@@ -234,7 +347,7 @@ namespace API.Services
             var roles = await _userManager.GetRolesAsync(user);
             if (roles.FirstOrDefault() == "admin")
             {
-                var questions = questionRepositories.listall(bob.Id);
+                var questions = questionRepositories.list(bob.Id);
                 if (questions != null)
                 {
                     questionRepositories.DeleteRange(questions);
@@ -247,8 +360,8 @@ namespace API.Services
         }
         public List<QuestionGDTO> List(string id)
         {
-            var questions = questionRepositories.listall(id);
-            List<QuestionGDTO> questionDTOs = new List<QuestionGDTO>(questions.Count);
+            var questions = questionRepositories.list(id);
+            List<QuestionGDTO> questionDTOs = new List<QuestionGDTO>();
             if (!questions.IsNullOrEmpty())
             {
                 foreach (var question in questions)
@@ -257,11 +370,41 @@ namespace API.Services
                     {
                         QuestionID = question.QuestionID,
                         QuestionSerial = question.QuestionSerial,
+                        UrlAudio = question.UrlAudio,
+                        UrlImage = question.UrlImage,
                         QuestionContext = question.QuestionContext,
                         Answer1 = question.Answer1,
                         Answer2 = question.Answer2,
                         Answer3 = question.Answer3,
                         Answer4 = question.Answer4,
+                        CorrectDescription = question.CorrectDescription,
+                        CorrectAnswer = question.CorrectAnswer
+                    });
+                }
+                return questionDTOs;
+            }
+            return Enumerable.Empty<QuestionGDTO>().ToList();
+        }
+        public List<QuestionGDTO> ListAll()
+        {
+            var questions = questionRepositories.listall();
+            List<QuestionGDTO> questionDTOs = new List<QuestionGDTO>();
+            if (!questions.IsNullOrEmpty())
+            {
+                foreach (var question in questions)
+                {
+                    questionDTOs.Add(new QuestionGDTO
+                    {
+                        QuestionID = question.QuestionID,
+                        QuestionSerial = question.QuestionSerial,
+                        UrlAudio = question.UrlAudio,
+                        UrlImage = question.UrlImage,
+                        QuestionContext = question.QuestionContext,
+                        Answer1 = question.Answer1,
+                        Answer2 = question.Answer2,
+                        Answer3 = question.Answer3,
+                        Answer4 = question.Answer4,
+                        CorrectDescription = question.CorrectDescription,
                         CorrectAnswer = question.CorrectAnswer
                     });
                 }
@@ -336,7 +479,7 @@ namespace API.Services
         public async Task<SentenceComGDTO> getSenCom(string id, string userid)
         {
             SentenceComplete sentence = sencomRepositories.getbyuser(id,userid);
-            if(sentence == null)
+            if (sentence == null)
             {
                 return new  SentenceComGDTO
                 {
@@ -359,7 +502,7 @@ namespace API.Services
         public async Task<List<QuestionComGDTO>> List(string id, string userid)
         {
             List<QuestionComplete> questions = questionCompleteRepositories.list(id, userid);
-            List<QuestionComGDTO> quescomDTOs = new List<QuestionComGDTO>(questions.Capacity);
+            List<QuestionComGDTO> quescomDTOs = new List<QuestionComGDTO>();
             if (!questions.IsNullOrEmpty())
             {
                 foreach (var question in questions)
@@ -369,8 +512,6 @@ namespace API.Services
                         QuestionSerial = question.QuestionSerial,
                         QuestionChoose = question.QuestionChoose,
                         IsCorrect = question.IsCorrect,
-                        CorrectDescription = Encoding.UTF8.GetString(questionCompleteRepositories.getdescription(question.QuestionID)),
-                        CorrectAnswer = questionCompleteRepositories.getcorrectanswer(question.QuestionID),
                     });
                 }
                 return quescomDTOs;
@@ -456,9 +597,9 @@ namespace API.Services
             }
             return new Response { Status = false, Message = "Need authencation" };
         }
-        public List<UserSentenceDTO> List(int id, string user)
+        public List<UserSentenceDTO> List(string id, string user)
         {
-            var sentences = senRepositories.Listall(id);
+            var sentences = senRepositories.List(id);
             List<UserSentenceDTO> sentenceDTOs = new List<UserSentenceDTO>(sentences.Capacity);
             if (!sentences.IsNullOrEmpty())
             {
@@ -478,10 +619,30 @@ namespace API.Services
             }
             return Enumerable.Empty<UserSentenceDTO>().ToList();
         }
-        public PracticeDTO getPractice(int id, string user)
+        public List<SentencesGDTO> ListAll()
+        {
+            var sentences = senRepositories.Listall();
+            List<SentencesGDTO> sentenceDTOs = new List<SentencesGDTO>();
+            if (!sentences.IsNullOrEmpty())
+            {
+                foreach (var sentence in sentences)
+                {
+                    sentenceDTOs.Add(new SentencesGDTO
+                    {
+                        SentenceSerial = sentence.SentenceSerial,
+                        SentenceId = sentence.SentenceId,
+                        Description = sentence.Description,
+                    });
+                }
+                return sentenceDTOs;
+            }
+            return Enumerable.Empty<SentencesGDTO>().ToList();
+        }
+        public PracticeDTO getPractice(string id, string user)
         {
             PracticeDTO practiceDTO = new PracticeDTO()
             {
+                PracticeSkill = senRepositories.GetSkill(id),
                 TestCount = senRepositories.Count(id),
                 TestCorrect = senRepositories.TestCorrect(id, user),
             };
@@ -490,90 +651,4 @@ namespace API.Services
     }
     #endregion
 
-    #region"file"
-    public class FileService
-    {
-        private DB dBContext;
-        private readonly UserManager<IdentityUser> _userManager;
-        private IFileRepositories fileRepositories;
-        public FileService(DB dBContext, UserManager<IdentityUser> userManager)
-        {
-            this.dBContext = dBContext;
-            this.fileRepositories = new FileRepository(dBContext);
-            this._userManager = userManager;
-        }
-        public void Save()
-        {
-            dBContext.SaveChanges();
-        }
-        public async Task<Response> insert(byte[] data,string filename, string id,string userid,string filetype)
-        {
-            var user = await _userManager.FindByIdAsync(userid);
-            var roles = await _userManager.GetRolesAsync(user);
-            QuestionFile qfile = fileRepositories.getbyname(filename);
-            Question question = fileRepositories.question(id);
-            if (qfile == null && roles.FirstOrDefault() == "admin")
-            {
-                QuestionFile file1 = new QuestionFile()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    FileName = filename,
-                    FileData = data,
-                    ques = question,
-                    FileType = filetype,
-                };
-                fileRepositories.Add(file1);
-                Save();
-                return new Response { Status = true, Message = "Success" };
-            }
-            return new Response { Status = false, Message = "File already exist!!!" };
-        }
-        public async Task<Response> delete(FileDTO file)
-        {
-            var user = await _userManager.FindByIdAsync(file.UserID);
-            var roles = await _userManager.GetRolesAsync(user);
-            QuestionFile file1 = fileRepositories.getbyname(file.fileName);
-            if (file1 != null && roles.FirstOrDefault() == "admin")
-            {
-                fileRepositories.Delete(file1);
-                Save();
-                return new Response { Status = true, Message = "Success" };
-            }
-            return new Response { Status = false, Message = "File not found!!!" };
-        }
-    }
-    #endregion
-
-    #region "Cloud"
-    public class CloudService
-    {
-        public IConfiguration configuration { get; }
-        private CloudinarySettings cloudinarySetting;
-        private Cloudinary _cloudinary;
-        public CloudService(IConfiguration configuration) 
-        {
-            this.configuration = configuration;
-            cloudinarySetting = configuration.GetSection("CloudinarySettings").Get<CloudinarySettings>();
-            Account acc = new Account
-                (
-                    cloudinarySetting.CloudName,
-                    cloudinarySetting.ApiKey,
-                    cloudinarySetting.ApiSecret
-                );
-            _cloudinary = new Cloudinary (acc);
-        }
-        public async Task<VideoUploadResult> upload(IFormFile file)
-        {
-            VideoUploadResult result = new VideoUploadResult();
-            var uploadparam = new VideoUploadParams
-            {
-                File = new FileDescription(file.FileName,file.OpenReadStream()),
-                Folder = "ENGL"
-            };
-            result = await _cloudinary.UploadAsync(uploadparam);
-            return result;
-        }
-
-    }
-    #endregion
 }

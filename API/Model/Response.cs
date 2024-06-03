@@ -1,6 +1,8 @@
-﻿namespace Model
+﻿using CloudinaryDotNet.Actions;
+
+namespace Model
 {
-    public class Response
+    public class Response 
     {
         public bool Status { get; set; }
 

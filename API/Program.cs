@@ -1,4 +1,3 @@
-using API.Controllers.ServerHub;
 using API.Data.Helpers;
 using API.DBContext;
 using API.Enity;
@@ -48,15 +47,12 @@ builder.Services.AddScoped<ISentenceRepositories, SentenceRepository>();
 builder.Services.AddScoped<IQuestionRepositories, QuestionRepository>();
 builder.Services.AddScoped<IQuestionCompleteRepositories, QuestionCompleteRepository>();
 builder.Services.AddScoped<ISentenceCompleteRepositories, SentenceCompleteRepository>();
-builder.Services.AddScoped<IFileRepositories, FileRepository>();
 
-builder.Services.AddTransient<FileService>();
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<ExamService>();
 builder.Services.AddTransient<QuestionService>();
 builder.Services.AddTransient<SentenceService>();
 builder.Services.AddTransient<SentenceCompServices>();
-builder.Services.AddTransient<CloudService>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -103,7 +99,6 @@ app.UseCors("CorsPolicy");
 
 app.MapControllers();
 
-app.MapHub<StreamingFile>("streaming-file");
 app.UseResponseCompression();
 
 app.Run();
