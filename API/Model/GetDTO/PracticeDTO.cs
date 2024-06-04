@@ -4,6 +4,6 @@
     {
         public string? PracticeSkill {  get; set; }
         public int? TestCount { get; set; }
-        public int? TestCorrect { get; set; }
+        public int? Tested { get; set; }
     }
 }

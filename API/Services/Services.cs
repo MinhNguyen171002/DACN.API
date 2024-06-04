@@ -233,6 +233,7 @@ namespace API.Services
                     string type = file.ContentType;
                     switch (type)
                     {
+                        case ("image/jpeg"):
                         case ("image/png"):
                             ImageUploadResult Imageresult = new ImageUploadResult();
                             ImageUploadParams uploadparam = new ImageUploadParams
@@ -242,7 +243,7 @@ namespace API.Services
                             };
                             Imageresult = await _cloudinary.UploadAsync(uploadparam);
                             ImageUrl.Add(Imageresult.Uri.ToString());
-                            break;
+                            break;                      
                         case ("audio/mpeg"):
                             VideoUploadResult result = new VideoUploadResult();
                             VideoUploadParams uploadParam = new VideoUploadParams
@@ -644,7 +645,7 @@ namespace API.Services
             {
                 PracticeSkill = senRepositories.GetSkill(id),
                 TestCount = senRepositories.Count(id),
-                TestCorrect = senRepositories.TestCorrect(id, user),
+                Tested = senRepositories.TestCorrect(id, user),
             };
             return practiceDTO;
         }

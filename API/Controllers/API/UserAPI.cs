@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Model;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 
@@ -114,6 +115,7 @@ namespace API.Controllers.API
         {
             return Ok(await sentenceCompService.getSenCom(id, userid));
         }
+        
         #endregion
 
     }

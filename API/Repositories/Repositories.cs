@@ -153,10 +153,8 @@ namespace API.Repositories
             return _dbContext.questions.Where(x => x.sentence.SentenceId.Equals(id)).Count();
         }
         public int? TestCorrect(object id, object user)
-        {
-            return _dbContext.sentenceCompletes.Where(x => x.SentenceID
-            .Equals(_dbContext.sentences.Where(x => x.exam.ExamID.Equals(id)).Select(x => x.SentenceId).FirstOrDefault())
-            && x.Status.Equals(true) && x.user.UserID.Equals(user)).Count();
+        {           
+            return _dbContext.sentenceCompletes.Where(x => x.sentence.exam.ExamID.Equals(id)&& x.Status.Equals(true) && x.user.UserID.Equals(user)).Count();
         }
         public decimal CorrectPercent(object id, object user) {
             int? sentence = _dbContext.sentenceCompletes.Where(x => x.SentenceID.Equals(id)
