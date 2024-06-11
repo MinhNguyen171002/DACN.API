@@ -40,7 +40,7 @@ namespace API.Repositories
         }
         public List<Exam> Listall()
         {
-            return _dbContext.exams.OrderBy(x=>x.Part).ToList();
+            return _dbContext.exams.OrderBy(x=>x.Part).ThenBy(x=>x.Skill).ToList();
         }
         public int Count(object id)
         {
@@ -67,11 +67,11 @@ namespace API.Repositories
         }
         public List<Question> list(object id)
         {
-            return _dbContext.questions.Where(x => x.sentence.SentenceId.Equals(id)).OrderBy(x => x.QuestionSerial).ToList();
+            return _dbContext.questions.Include(x => x.sentence).Where(x => x.sentence.SentenceId.Equals(id)).OrderBy(x => x.QuestionSerial).ToList();
         }
         public List<Question> listall()
         {
-            return _dbContext.questions.OrderBy(x=>x.sentence.SentenceId).ThenBy(x=>x.QuestionSerial).ToList();
+            return _dbContext.questions.Include(x => x.sentence).OrderBy(x=>x.sentence.SentenceId).ThenBy(x=>x.QuestionSerial).ToList();
         }
     }
     #endregion
@@ -138,11 +138,11 @@ namespace API.Repositories
         }
         public List<Sentence> List(object id)
         {
-            return _dbContext.sentences.Where(x => x.exam.ExamID.Equals(id)).OrderBy(x=>x.SentenceSerial).ToList();
+            return _dbContext.sentences.Include(x => x.exam).Where(x => x.exam.ExamID.Equals(id)).OrderBy(x=>x.SentenceSerial).ToList();
         }
         public List<Sentence> Listall()
         {
-            return _dbContext.sentences.OrderBy(x => x.exam.ExamID).ToList();
+            return _dbContext.sentences.Include(x => x.exam).OrderBy(x => x.exam.ExamID).ThenBy(x=>x.SentenceSerial).ToList();
         }
         public int Count(object id)
         {
@@ -205,7 +205,7 @@ namespace API.Repositories
         }
         public List<QuestionComplete> list(object id,object userid)
         {
-            return _dbContext.questionCompletes.Where(x => x.user.UserID.Equals(userid) &&x.sen.SentenceId.Equals(id)).OrderBy(x => x.QuestionSerial).ToList();
+            return _dbContext.questionCompletes.Include(x => x.sen).Where(x => x.user.UserID.Equals(userid) &&x.sen.SentenceId.Equals(id)).OrderBy(x => x.QuestionSerial).ToList();
         }
     }
     #endregion

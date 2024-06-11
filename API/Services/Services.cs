@@ -57,6 +57,7 @@ namespace API.Services
             {
                 UserGDTO gDTO = new UserGDTO()
                 {
+                    UserID = user.UserID,
                     UserName = user.UserName,
                     UserEmail = user.Email,
                     UserPhone = user.SDT
@@ -371,6 +372,7 @@ namespace API.Services
                     {
                         QuestionID = question.QuestionID,
                         QuestionSerial = question.QuestionSerial,
+                        Sentence = question.sentence.Description,
                         UrlAudio = question.UrlAudio,
                         UrlImage = question.UrlImage,
                         QuestionContext = question.QuestionContext,
@@ -398,6 +400,7 @@ namespace API.Services
                     {
                         QuestionID = question.QuestionID,
                         QuestionSerial = question.QuestionSerial,
+                        Sentence = question.sentence.Description,
                         UrlAudio = question.UrlAudio,
                         UrlImage = question.UrlImage,
                         QuestionContext = question.QuestionContext,
@@ -511,6 +514,9 @@ namespace API.Services
                     quescomDTOs.Add(new QuestionComGDTO
                     {
                         QuestionSerial = question.QuestionSerial,
+/*                        QuestionCorrect = question.sen.questions.Where(x=>x.QuestionID
+                        .Equals(question.QuestionID)).Select(x=>x.CorrectAnswer)
+                        .FirstOrDefault(),*/
                         QuestionChoose = question.QuestionChoose,
                         IsCorrect = question.IsCorrect,
                     });
@@ -630,9 +636,11 @@ namespace API.Services
                 {
                     sentenceDTOs.Add(new SentencesGDTO
                     {
+                        Skill = sentence.exam.Skill,
                         SentenceSerial = sentence.SentenceSerial,
                         SentenceId = sentence.SentenceId,
                         Description = sentence.Description,
+                        QuestionCount = senRepositories.CountQuestion(sentence.SentenceId)
                     });
                 }
                 return sentenceDTOs;

@@ -4,6 +4,7 @@
     {
         public string? QuestionID { get; set; }
         public int? QuestionSerial { get; set; }
+        public string? Sentence { get; set; }
         public string? QuestionContext { get; set; }
         public string? UrlImage { get; set; }
         public string? UrlAudio { get; set; }

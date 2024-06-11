@@ -1,4 +1,6 @@
-﻿namespace API.Model.DTO
+﻿using Microsoft.AspNetCore.Components.Forms;
+
+namespace API.Model.DTO
 {
     public class QuestionDTO
     {
@@ -17,6 +19,6 @@
     {
         public string? UserID { get; set; }
         public string? SentenceID { get; set; }
-        public List<IFormFile> files { get; set; }
+        public List<IBrowserFile> files { get; set; }
     }
 }

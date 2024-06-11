@@ -5,6 +5,7 @@ using API.Repositories;
 using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.Negotiate;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
@@ -74,14 +75,14 @@ builder.Services.AddAuthentication(options =>
             });
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddResponseCompression();
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 5242880;
+});
 
 builder.Services.AddSignalR();
-
-builder.Services.AddResponseCompression(opts =>
-{
-    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-          new[] { "application/octet-stream" });
-});
 
 var app = builder.Build();
 

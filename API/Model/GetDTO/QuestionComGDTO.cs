@@ -4,6 +4,7 @@
     {
         public int? QuestionSerial { get; set; }
         public string? QuestionChoose { get; set; }
+        public string? QuestionCorrect { get;set; }
         public bool? IsCorrect { get; set; }
     }
 }
