@@ -3,6 +3,7 @@
     public class QuestionGDTO
     {
         public string? QuestionID { get; set; }
+        public string? SentenceID { get; set; }
         public int? QuestionSerial { get; set; }
         public string? Sentence { get; set; }
         public string? QuestionContext { get; set; }

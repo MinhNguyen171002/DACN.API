@@ -14,8 +14,10 @@ namespace API.Model.DTO
         public string? Answer4 { get; set; }
         public string? CorrectAnswer { get; set; }
         public string? SentenceID { get; set; }
+        public string? CorrectDescription { get; set; }
+        public List<IFormFile>? files { get; set; } = new List<IFormFile>();
     }
-    public class QuestionFDTO
+    public class QuestionFileDTO
     {
         public string? UserID { get; set; }
         public string? SentenceID { get; set; }

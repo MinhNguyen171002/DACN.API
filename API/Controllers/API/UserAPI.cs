@@ -25,15 +25,18 @@ namespace API.Controllers.API
         SentenceCompServices sentenceCompService;
         QuestionService questionService;
         SentenceService sentenceService;
+        VocabularyService vocabularyService;
         public UserAPI(UserService userService,            
            SentenceCompServices sentenceCompService, QuestionService questionService,
-            SentenceService sentenceService, ExamService examService)
+            SentenceService sentenceService, ExamService examService,
+            VocabularyService vocabularyService)
         {
             this.userService = userService;
             this.sentenceCompService = sentenceCompService;
             this.questionService = questionService;
             this.sentenceService = sentenceService;
             this.examService = examService;
+            this.vocabularyService = vocabularyService;
         }
         #region "userinfo"
         [HttpGet]
@@ -90,6 +93,28 @@ namespace API.Controllers.API
             }
             return Ok(status);
         }
+        [HttpPost]
+        [Route("addtopic")]
+        public async Task<IActionResult> addTopic([FromBody] TopicDTO topic)
+        {
+            var status = await vocabularyService.creTopic(topic);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpPost]
+        [Route("addvocabulary")]
+        public async Task<IActionResult> addVocabulary([FromBody] VocabularyDTO vocabulary)
+        {
+            var status = await vocabularyService.creVoca(vocabulary);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
         [HttpDelete]
         [Route("repractice")]
         public IActionResult rePractice([FromBody] BobDTO bob)
@@ -115,7 +140,21 @@ namespace API.Controllers.API
         {
             return Ok(await sentenceCompService.getSenCom(id, userid));
         }
-        
+        [HttpGet]
+        [Route("getvocabulary")]
+        public async Task<IActionResult> GetVocabulary(string id, string userid)
+        {
+            List<VocabularyGDTO> vocabularies = await vocabularyService.ListVocabulary(id, userid);
+            return Ok(vocabularies);
+        }
+        [HttpGet]
+        [Route("gettopic")]
+        public async Task<IActionResult> GetTopic(string userid)
+        {
+            List<TopicGDTO> topics = await vocabularyService.ListTopic(userid);
+            return Ok(topics);
+        }
+
         #endregion
 
     }

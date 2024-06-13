@@ -15,6 +15,8 @@ namespace API.DBContext
         public DbSet<SentenceComplete> sentenceCompletes { get; set; }
         public DbSet<QuestionComplete> questionCompletes { get; set; }
         public DbSet<Sentence> sentences { get; set; }
+        public DbSet<Vocabulary> vocabularies { get; set; }
+        public DbSet<Topic> topic { get; set; }
         public DB(DbContextOptions<DB> options) : base(options)
         {
         }
@@ -60,6 +62,18 @@ namespace API.DBContext
             builder.Entity<SentenceComplete>()
                 .HasOne(c => c.sentence)
                 .WithOne(c => c.sencom).HasForeignKey<SentenceComplete>(c => c.SentenceID);
+
+            builder.Entity<Vocabulary>()
+                .HasOne(c => c.user)
+                .WithMany(c => c.vocabularies).OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<Vocabulary>()
+                .HasOne(c=>c.topic)
+                .WithMany(c=>c.vocabularies).OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<Topic>()
+                .HasOne(c => c.user)
+                .WithMany(c => c.topic).OnDelete(DeleteBehavior.SetNull);
 
             builder.Entity<IdentityRole>().HasData(new IdentityRole
             {

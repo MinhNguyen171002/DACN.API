@@ -9,7 +9,10 @@ namespace API.Data.Helpers
         public MappingProfile()
         {
             CreateMap<ExamDTO, Exam>().ReverseMap();
+            CreateMap<QuestionDTO, Question>().ReverseMap();
             CreateMap<SentenceDTO, Sentence>().ReverseMap();
+            CreateMap<VocabularyDTO, Vocabulary>().ReverseMap();
+            CreateMap<TopicDTO, Topic>().ReverseMap();
             CreateMap<SentenceComDTO, SentenceComplete>().ReverseMap();
         }
     }

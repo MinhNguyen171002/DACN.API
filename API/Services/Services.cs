@@ -16,6 +16,7 @@ using System.Collections;
 using System.IO;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Net.WebRequestMethods;
 
 namespace API.Services
 {
@@ -114,18 +115,18 @@ namespace API.Services
 
             if (roles.FirstOrDefault() == "admin")
             {
-                Exam exam = examRepositories.GetById(ex.ExamID);
+                Exam exam = examRepositories.exam(ex.ExamSerial,ex.Skill);
                 if (exam == null)
                 {
                     Exam exam1 = _mapper.Map<Exam>(ex);
                     exam1.ExamID = Guid.NewGuid().ToString();
                     examRepositories.Add(exam1);
                     Save();
-                    return new Response { Status = true, Message = "Success" };
+                    return new Response { Status = true, Message = "Thêm thành công" };
                 }
-                return new Response { Status = false, Message = "Exam already exist" };
+                return new Response { Status = false, Message = "Nội dung đã tồn tại" };
             }
-            return new Response { Status = false, Message = "Need authencation" };
+            return new Response { Status = false, Message = "Cần quyền admin"};
         }
         public async Task<Response> update(ExamDTO ex)
         {
@@ -143,11 +144,11 @@ namespace API.Services
                     exam.Skill = ex.Skill;
                     examRepositories.Update(exam);
                     Save();
-                    return new Response { Status = true, Message = "Success" };
+                    return new Response { Status = true, Message = "Cập nhật thành công" };
                 }
-                return new Response { Status = false, Message = "Exam not found!!!" };
+                return new Response { Status = false, Message = "Không tìm thấy nội dung" };
             }
-            return new Response { Status = false, Message = "Need authencation" };
+            return new Response { Status = false, Message = "Cần quyền admin" };
         }
         public async Task<Response> delete(BobDTO bob)
         {
@@ -160,11 +161,11 @@ namespace API.Services
                 {
                     examRepositories.Delete(exam);
                     Save();
-                    return new Response { Status = true, Message = "Success" };
+                    return new Response { Status = true, Message = "Xóa thành công" };
                 }
-                return new Response { Status = false, Message = "Exam not found!!!" };
+                return new Response { Status = false, Message = "Không tìm thấy Nội Dung" };
             }
-            return new Response { Status = false, Message = "Need authencation" };
+            return new Response { Status = false, Message = "Cần quyền admin" };
         }
         public List<ExamGDTO> List()
         {
@@ -202,12 +203,14 @@ namespace API.Services
         public IConfiguration configuration { get; }
         private CloudinarySettings cloudinarySetting;
         private Cloudinary _cloudinary;
-        public QuestionService(DB dBContext, UserManager<IdentityUser> _userManager, IConfiguration configuration)
+        private IMapper _mapper;
+        public QuestionService(DB dBContext, UserManager<IdentityUser> _userManager, IConfiguration configuration, IMapper mapper)
         {
             this.dBContext = dBContext;
             this.questionRepositories = new QuestionRepository(dBContext);
             this._userManager = _userManager;
             this.configuration = configuration;
+            this._mapper = mapper;
             cloudinarySetting = configuration.GetSection("CloudinarySettings").Get<CloudinarySettings>();
             Account acc = new Account
                 (
@@ -221,8 +224,75 @@ namespace API.Services
         {
             dBContext.SaveChanges();
         }
-      
-        public async Task<Response> upload(QuestionFDTO ques)
+        public async Task<Response> create(QuestionDTO ques)
+        {
+            var user = await _userManager.FindByIdAsync(ques.UserID);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {                
+                Sentence sentence = questionRepositories.sentence(ques.SentenceID);
+                string ImageUrl = string.Empty, AudioUrl = string.Empty;
+                if (ques.files.Any())
+                {
+                    foreach (IFormFile file in ques.files)
+                    {
+                        string type = file.ContentType;                        
+                        switch (type)
+                        {
+                            case ("image/jpeg"):
+                            case ("image/png"):
+                                ImageUploadResult Imageresult = new ImageUploadResult();
+                                ImageUploadParams uploadparam = new ImageUploadParams
+                                {
+                                    File = new FileDescription(file.FileName, file.OpenReadStream()),
+                                    Folder = "ENGL"
+                                };
+                                Imageresult = await _cloudinary.UploadAsync(uploadparam);
+                                ImageUrl = Imageresult.Uri.ToString();
+                                break;
+                            case ("audio/mpeg"):
+                                VideoUploadResult result = new VideoUploadResult();
+                                VideoUploadParams uploadParam = new VideoUploadParams
+                                {
+                                    File = new FileDescription(file.Name, file.OpenReadStream()),
+                                    Folder = "ENGL"
+                                };
+                                result = await _cloudinary.UploadAsync(uploadParam);
+                                AudioUrl = result.Uri.ToString();
+                                break;
+                        }
+                    }                       
+                }
+                Question question = new Question()
+                {
+                    QuestionID = Guid.NewGuid().ToString(),
+                    sentence = sentence,
+                    QuestionContext = ques.QuestionContext,
+                    QuestionSerial = ques.QuestionSerial,
+                    Answer1 = ques.Answer1,
+                    Answer2 = ques.Answer2,
+                    Answer3 = ques.Answer3,
+                    Answer4 = ques.Answer4,
+                    CorrectAnswer = ques.CorrectAnswer,
+                    CorrectDescription = ques.CorrectDescription,
+                };
+                if (!string.IsNullOrEmpty(ImageUrl) || !string.IsNullOrEmpty(AudioUrl))
+                {
+                    question.UrlAudio = AudioUrl;
+                    question.UrlImage = ImageUrl;
+                }
+                var IsVaild = questionRepositories.question(sentence.SentenceId,question.QuestionSerial);
+                if (IsVaild == null)
+                {
+                    questionRepositories.Add(question);
+                    Save();
+                    return new Response { Status = true, Message = "Thêm thành công" };
+                }
+                return new Response { Status = false, Message = "Câu hỏi đã tồn tại" };
+            }
+            return new Response { Status = false, Message = "Cần quyền admin" };
+        }
+        public async Task<Response> upload(QuestionFileDTO ques)
         {
             var user = await _userManager.FindByIdAsync(ques.UserID);
             var roles = await _userManager.GetRolesAsync(user);
@@ -263,36 +333,9 @@ namespace API.Services
                                 byte[]? fileData = memoryStream.ToArray();
                                 List<string> lines = Encoding.Default.GetString(fileData).Split('\\').ToList();
                                 List<Question> questions = new List<Question>();
-                                if (ImageUrl.Any() || AudioUrl.Any())
+                                for (int i = 0; i < lines.Capacity; i++)
                                 {
-                                    for (int i = 0; i < lines.Capacity; i++)
-                                    {
-                                        List<string> parts = lines[i].Split('/').ToList();
-                                        int serial = int.Parse(parts[0]);
-                                        Question question = new Question()
-                                        {
-                                            QuestionID = Guid.NewGuid().ToString(),
-                                            QuestionSerial = serial,
-                                            QuestionContext = parts[1],
-                                            UrlImage = ImageUrl[i],
-                                            UrlAudio = AudioUrl[i],
-                                            Answer1 = parts[2],
-                                            Answer2 = parts[3],
-                                            Answer3 = parts[4],
-                                            Answer4 = parts[5],
-                                            CorrectAnswer = parts[6],
-                                            CorrectDescription = parts[7].Trim(),
-                                            sentence = sentence,
-                                        };
-                                        questions.Add(question);
-                                    }
-                                    questionRepositories.AddRange(questions);
-                                    Save();
-                                    break;
-                                }
-                                foreach (string line in lines)
-                                {
-                                    List<string> parts = line.Split('/').ToList();
+                                    List<string> parts = lines[i].Split('/').ToList();
                                     int serial = int.Parse(parts[0]);
                                     Question question = new Question()
                                     {
@@ -307,6 +350,11 @@ namespace API.Services
                                         CorrectDescription = parts[7].Trim(),
                                         sentence = sentence,
                                     };
+                                    if (ImageUrl.Any() || AudioUrl.Any())
+                                    {
+                                        question.UrlImage = ImageUrl[i];
+                                        question.UrlAudio = AudioUrl[i];
+                                    }
                                     questions.Add(question);
                                 }
                                 questionRepositories.AddRange(questions);
@@ -315,9 +363,9 @@ namespace API.Services
                             }
                     }
                 }
-                return new Response { Status = true , Message = "Success" };
+                return new Response { Status = true , Message = "Thêm thành công" };
             }
-            return new Response { Status = false, Message = "Need authencation" };
+            return new Response { Status = false, Message = "Cần quyền admin" };
         }
         public async Task<Response> update(QuestionDTO ques)
         {
@@ -337,13 +385,13 @@ namespace API.Services
                     question.CorrectAnswer = ques.CorrectAnswer;
                     questionRepositories.Update(question);
                     Save();
-                    return new Response { Status = true, Message = "Success" };
+                    return new Response { Status = true, Message = "Cập nhật thành công" };
                 }
-                return new Response { Status = false, Message = "Question not found!!!" };
+                return new Response { Status = false, Message = "Câu hỏi không tồn tại" };
             }
-            return new Response { Status = false, Message = "Need authencation" };
+            return new Response { Status = false, Message = "Cần quyền admin" };
         }
-        public async Task<Response> delete(BobDTO bob)
+        public async Task<Response> deletes(BobDTO bob)
         {
             var user = await _userManager.FindByIdAsync(bob.UserId);
             var roles = await _userManager.GetRolesAsync(user);
@@ -354,11 +402,28 @@ namespace API.Services
                 {
                     questionRepositories.DeleteRange(questions);
                     Save();
-                    return new Response { Status = true, Message = "Success" };
+                    return new Response { Status = true, Message = "Xóa thành công" };
                 }
-                return new Response { Status = false, Message = "Question not found!!!" };
+                return new Response { Status = false, Message = "Câu hỏi không tồn tại" };
             }
-            return new Response { Status = false, Message = "Need authencation" };
+            return new Response { Status = false, Message = "Cần quyền admin" };
+        }
+        public async Task<Response> delete(BobDTO bob)
+        {
+            var user = await _userManager.FindByIdAsync(bob.UserId);
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault() == "admin")
+            {
+                var questions = questionRepositories.GetById(bob.Id);
+                if (questions != null)
+                {
+                    questionRepositories.Delete(questions);
+                    Save();
+                    return new Response { Status = true, Message = "Xóa thành công" };
+                }
+                return new Response { Status = false, Message = "Câu hỏi không tồn tại" };
+            }
+            return new Response { Status = false, Message = "Cần quyền admin" };
         }
         public List<QuestionGDTO> List(string id)
         {
@@ -399,6 +464,7 @@ namespace API.Services
                     questionDTOs.Add(new QuestionGDTO
                     {
                         QuestionID = question.QuestionID,
+                        SentenceID = question.sentence.SentenceId,
                         QuestionSerial = question.QuestionSerial,
                         Sentence = question.sentence.Description,
                         UrlAudio = question.UrlAudio,
@@ -463,9 +529,9 @@ namespace API.Services
                 sen1.user = user;
                 sencomRepositories.Add(sen1);
                 Save();
-                return new Response { Status = true, Message = "Success" };
+                return new Response { Status = true, Message = "Nộp bài thành công" };
             }
-            return new Response { Status = false, Message = "Not found" };
+            return new Response { Status = false, Message = "Không tìm thấy bộ đề thi" };
         }
         public async Task<Response> delete(BobDTO bob)
         {
@@ -476,9 +542,9 @@ namespace API.Services
                 questionCompleteRepositories.DeleteRange(questions);
                 sencomRepositories.Delete(sen);
                 Save();
-                return new Response { Status = true, Message = "Success" };
+                return new Response { Status = true, Message = "Cho phép làm lại" };
             }
-            return new Response { Status = false, Message = "Not found!!!" };
+            return new Response { Status = false, Message = "Không tìm thấy bộ đề" };
         }
         public async Task<SentenceComGDTO> getSenCom(string id, string userid)
         {
@@ -562,11 +628,11 @@ namespace API.Services
                 {
                     senRepositories.Add(sentence);
                     Save();
-                    return new Response { Status = true, Message = "Success" };
+                    return new Response { Status = true, Message = "Thêm đề thành công" };
                 }
-                return new Response { Status = false, Message = "Sentence already exist" };
+                return new Response { Status = false, Message = "Đề đã tồn tại" };
             }
-            return new Response { Status = false, Message = "Need authencation" };
+            return new Response { Status = false, Message = "Cần quyền admin" };
         }
         public async Task<Response> update(SentenceDTO sen)
         {
@@ -581,11 +647,11 @@ namespace API.Services
                     sentence.Description = sen.Description;
                     senRepositories.Update(sentence);
                     Save();
-                    return new Response { Status = true, Message = "Success" };
+                    return new Response { Status = true, Message = "Cập nhật thành công" };
                 }
-                return new Response { Status = false, Message = "Sentence not found!!!" };
+                return new Response { Status = false, Message = "Không tìm thấy Đề" };
             }
-            return new Response { Status = false, Message = "Need authencation" };
+            return new Response { Status = false, Message = "Cần quyền admin" };
         }
         public async Task<Response> delete(BobDTO bob)
         {
@@ -598,11 +664,11 @@ namespace API.Services
                 {
                     senRepositories.Delete(sentence);
                     Save();
-                    return new Response { Status = true, Message = "Success" };
+                    return new Response { Status = true, Message = "Xóa thành công" };
                 }
-                return new Response { Status = false, Message = "Practice not found!!!" };
+                return new Response { Status = false, Message = "Không tìm thấy Đề" };
             }
-            return new Response { Status = false, Message = "Need authencation" };
+            return new Response { Status = false, Message = "Cần quyền admin" };
         }
         public List<UserSentenceDTO> List(string id, string user)
         {
@@ -638,6 +704,8 @@ namespace API.Services
                     {
                         Skill = sentence.exam.Skill,
                         SentenceSerial = sentence.SentenceSerial,
+                        ExamDetail = sentence.exam.ExamDescription,
+                        ExamId = sentence.exam.ExamID,
                         SentenceId = sentence.SentenceId,
                         Description = sentence.Description,
                         QuestionCount = senRepositories.CountQuestion(sentence.SentenceId)
@@ -656,6 +724,99 @@ namespace API.Services
                 Tested = senRepositories.TestCorrect(id, user),
             };
             return practiceDTO;
+        }
+    }
+    #endregion
+
+    #region "Vocabulary"
+    public class VocabularyService
+    {
+        private DB dBContext;
+        private readonly UserManager<IdentityUser> _userManager;
+        private IVocabularyRepositories vocarepositories;
+        private ITopicRepositories topicRepositories;
+        private IMapper _mapper;
+        public VocabularyService(DB dBContext, UserManager<IdentityUser> userManager, IMapper mapper)
+        {
+            this.dBContext = dBContext;
+            this.vocarepositories = new VocabularyRepository(dBContext);
+            this.topicRepositories = new TopicRepository(dBContext);
+            this._userManager = userManager;
+            _mapper = mapper;
+        }
+        public void Save()
+        {
+            dBContext.SaveChanges();
+        }
+        public async Task<Response> creTopic(TopicDTO topic)
+        {
+            User user = vocarepositories.user(topic.UserID);
+            if (user != null)
+            {
+                Topic topic1 = _mapper.Map<Topic>(topic);
+                topic1.TopicId = Guid.NewGuid().ToString();
+                topic1.user = user;
+                topicRepositories.Add(topic1);
+                Save();
+                return new Response { Status = true, Message = "Thêm thành công" };
+            }
+            return new Response { Status = false, Message = "Đã tồn tại" };
+        }
+        public async Task<Response> creVoca(VocabularyDTO vocabulary)
+        {
+            User user = vocarepositories.user(vocabulary.UserID);
+            Topic topic = vocarepositories.topic(vocabulary.TopicId);
+            if (topic != null)
+            {
+                Vocabulary vocabulary1 = _mapper.Map<Vocabulary>(vocabulary);
+                vocabulary1.VocabularyId = Guid.NewGuid().ToString();
+                vocabulary1.user = user;
+                vocabulary1.topic = topic;
+                vocarepositories.Add(vocabulary1);
+                Save();
+                return new Response { Status = true, Message = "Thêm thành công" };
+            }
+            return new Response { Status = false, Message = "Đã tồn tại" };
+        }
+        public async Task<List<VocabularyGDTO>> ListVocabulary(string id, string userid)
+        {
+            List<Vocabulary> vocabularys = vocarepositories.list(id, userid);
+            List<VocabularyGDTO> vocabularyDTOs = new List<VocabularyGDTO>();
+            if (!vocabularys.IsNullOrEmpty())
+            {
+                foreach (var vocabulary in vocabularys)
+                {
+                    vocabularyDTOs.Add(new VocabularyGDTO
+                    {
+                        VocabularyId = vocabulary.VocabularyId,
+                        vocabulary = vocabulary.vocabulary,
+                        Description = vocabulary.Description,
+                        TopicId = vocabulary.topic.TopicId,
+                        TopicName = vocabulary.topic.TopicName,
+                    });
+                }
+                return vocabularyDTOs;
+            }
+            return Enumerable.Empty<VocabularyGDTO>().ToList();
+        }
+        public async Task<List<TopicGDTO>> ListTopic(string userid)
+        {
+            List<Topic> topics = topicRepositories.list(userid);
+            List<TopicGDTO> topicDTOs = new List<TopicGDTO>();
+            if (!topics.IsNullOrEmpty())
+            {
+                foreach (var topic in topics)
+                {
+                    topicDTOs.Add(new TopicGDTO
+                    {
+                        TopicId = topic.TopicId,
+                        TopicName = topic.TopicName,
+                        VocabularyCount = topic.vocabularies.Count()
+                    });
+                }
+                return topicDTOs;
+            }
+            return Enumerable.Empty<TopicGDTO>().ToList();
         }
     }
     #endregion

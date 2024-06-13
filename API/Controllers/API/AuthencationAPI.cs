@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Model;
+using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -48,7 +49,7 @@ namespace API.Controllers.API
         {
             var userExists = await _userManager.FindByNameAsync(model.UserName);
             if (userExists != null)
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User already exists!" });
+                return Ok(new Response { Status = false, Message = "Đăng ký không thành công, thông tin đã tồn tại" });
 
             IdentityUser user = new IdentityUser()
             {
@@ -73,9 +74,9 @@ namespace API.Controllers.API
                     SDT = model.SDT
                 };
                 userService.insert(user1);
-                return Ok(new Response { Status = true, Message = "Welcome" });
+                return Ok(new Response { Status = true, Message = "Đăng ký thành công" });
             }
-            return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+            return Ok( new Response { Status = false, Message = "Đăng ký không thành công, vui lòng kiểm tra lại thông tin" });
         }
 
         [HttpPost]
@@ -113,14 +114,18 @@ namespace API.Controllers.API
                     Status = true
                 });
             }
-            return Unauthorized();
+            return Ok(new LoginResponse
+            {
+                Token = "Đăng nhập không thành công, vui lòng kiểm tra thông tin",
+                Status = false
+            }); ;
         }
         [HttpGet]
         [Route("logout")]
         public async Task<IActionResult> SignOut()
         {
             await _signInManager.SignOutAsync();
-            return Ok(new Response { Message = "Logout success!", Status = true });
+            return Ok(new Response { Message = "Đăng xuất thành công", Status = true });
         }
 
         #endregion

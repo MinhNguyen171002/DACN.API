@@ -48,12 +48,15 @@ builder.Services.AddScoped<ISentenceRepositories, SentenceRepository>();
 builder.Services.AddScoped<IQuestionRepositories, QuestionRepository>();
 builder.Services.AddScoped<IQuestionCompleteRepositories, QuestionCompleteRepository>();
 builder.Services.AddScoped<ISentenceCompleteRepositories, SentenceCompleteRepository>();
+builder.Services.AddScoped<IVocabularyRepositories, VocabularyRepository>();
+builder.Services.AddScoped<ITopicRepositories, TopicRepository>();
 
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<ExamService>();
 builder.Services.AddTransient<QuestionService>();
 builder.Services.AddTransient<SentenceService>();
 builder.Services.AddTransient<SentenceCompServices>();
+builder.Services.AddTransient<VocabularyService>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -79,7 +82,7 @@ builder.Services.AddResponseCompression();
 
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = 5242880;
+    options.MultipartBodyLengthLimit = 6000000;
 });
 
 builder.Services.AddSignalR();

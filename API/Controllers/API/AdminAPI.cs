@@ -78,10 +78,21 @@ namespace API.Controllers.API
 
         #region "question"
         [HttpPost]
-        [Route("addquestion")]
-        public async Task<IActionResult> CreQuestion([FromForm] QuestionFDTO fDTO)
+        [Route("addquestions")]
+        public async Task<IActionResult> CreQuestions([FromForm] QuestionFileDTO fDTO)
         {
             var status = await questionService.upload(fDTO);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpPost]
+        [Route("addquestion")]
+        public async Task<IActionResult> CreQuestion([FromForm] QuestionDTO ques)
+        {
+            var status = await questionService.create(ques);
             if (status.Status.Equals(false))
             {
                 return Ok(status);
@@ -100,7 +111,18 @@ namespace API.Controllers.API
             return Ok(status);
         }
         [HttpDelete]
-        [Route("delsquestion")]
+        [Route("delquestions")]
+        public async Task<IActionResult> DelQuestions([FromBody] BobDTO bob)
+        {
+            var status = await questionService.deletes(bob);
+            if (status.Status.Equals(false))
+            {
+                return Ok(status);
+            }
+            return Ok(status);
+        }
+        [HttpDelete]
+        [Route("delquestion")]
         public async Task<IActionResult> DelQuestion([FromBody] BobDTO bob)
         {
             var status = await questionService.delete(bob);
@@ -143,7 +165,7 @@ namespace API.Controllers.API
             return Ok(status);
         }
         [HttpDelete]
-        [Route("deletesentence")]
+        [Route("delsentence")]
         public async Task<IActionResult> DelSentence([FromBody] BobDTO bob)
         {
             var status = await sentenceService.delete(bob);

@@ -15,6 +15,8 @@ namespace API.Enity
         public IdentityUser user { get; set; }
         public virtual ICollection<SentenceComplete> sencoms {  get; set; }
         public virtual ICollection<QuestionComplete> quescoms { get; set; }
+        public virtual ICollection<Vocabulary> vocabularies { get; set; }
+        public virtual ICollection<Topic> topic { get; set; }
 
     }
 }
